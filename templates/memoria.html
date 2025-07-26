@@ -1,0 +1,123 @@
+{% extends 'base.html' %}
+{% block title %}Juego de Memoria - Gamificación UBE{% endblock %}
+{% block contenido %}
+<div class="fondo-blur memoria-box">
+  <h2>Juego: Memoria</h2>
+  <div class="juego-info-panel">
+    <div><b>Modo:</b> <span>{{ dificultad|capitalize }}</span></div>
+    <div>
+      <b>Ganancia:</b>
+      <span>{{ puntos_ganar }}</span> pts | <span>{{ xp_ganar }}</span> XP
+      {% if penalizacion > 0 %}
+        <span class="penalizacion">(Pierdes {{ penalizacion }} pts si pierdes)</span>
+      {% endif %}
+    </div>
+    <div>
+      <b>Cambiar dificultad:</b>
+      <select onchange="cambiarDificultad(this.value)">
+        <option value="facil" {% if dificultad == 'facil' %}selected{% endif %}>Fácil</option>
+        <option value="normal" {% if dificultad == 'normal' %}selected{% endif %}>Normal</option>
+        <option value="dificil" {% if dificultad == 'dificil' %}selected{% endif %}>Difícil</option>
+      </select>
+    </div>
+  </div>
+
+  <div id="memoria-game" class="memoria-game"></div>
+
+  <div class="memoria-botones">
+    <a href="{{ url_for('juegos') }}" class="btn">Retroceder</a>
+    <button class="btn" onclick="initMemoria(true)">Reiniciar</button> 
+  </div>
+</div>
+
+<script>
+    const icons = {
+        'facil': ["🍎", "🍌", "🍇"],
+        'normal': ["🍎", "🍌", "🍇", "🍒", "🍍", "🥝"],
+        'dificil': ["🍎", "🍌", "🍇", "🍒", "🍍", "🥝", "🍊", "🍉", "🍓"]
+    };
+    const dificultad = "{{ dificultad }}";
+    let board = [];
+    let selectedCards = [];
+    let solvedCards = [];
+    let canClick = true;
+
+    function enviarResultado(resultadoJuego) {
+        fetch("{{ url_for('juego_resultado') }}", {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                juego: 'memoria',
+                resultado: resultadoJuego,
+                dificultad: dificultad
+            })
+        });
+    }
+
+    function cambiarDificultad(val) {
+        window.location.href = "{{ url_for('memoria') }}?dificultad=" + val;
+    }
+
+    function renderBoard() {
+        const gameBoard = document.getElementById('memoria-game');
+        gameBoard.innerHTML = '';
+        const cols = dificultad === 'dificil' ? 6 : (dificultad === 'normal' ? 4 : 3);
+        gameBoard.style.gridTemplateColumns = `repeat(${cols}, 60px)`;
+
+        board.forEach((icon, index) => {
+            const card = document.createElement('div');
+            card.className = 'memoria-cell';
+            if (selectedCards.includes(index) || solvedCards.includes(index)) {
+                card.textContent = icon;
+                card.classList.add('flipped');
+            }
+            card.onclick = () => flipCard(index);
+            gameBoard.appendChild(card);
+        });
+    }
+
+    function flipCard(index) {
+        if (!canClick || selectedCards.length >= 2 || selectedCards.includes(index) || solvedCards.includes(index)) {
+            return;
+        }
+        selectedCards.push(index);
+        renderBoard();
+
+        if (selectedCards.length === 2) {
+            canClick = false;
+            setTimeout(checkMatch, 800);
+        }
+    }
+
+    function checkMatch() {
+        const [firstIndex, secondIndex] = selectedCards;
+        if (board[firstIndex] === board[secondIndex]) {
+            solvedCards.push(firstIndex, secondIndex);
+            if (solvedCards.length === board.length) {
+                enviarResultado('ganado');
+                alert('¡Ganaste!');
+                window.location.reload();
+            }
+        }
+        selectedCards = [];
+        canClick = true;
+        renderBoard();
+    }
+
+    function initMemoria(seJugoPartida = false) {
+        if (seJugoPartida) {
+            enviarResultado('jugado');
+        }
+        const currentIcons = icons[dificultad];
+        const cards = [...currentIcons, ...currentIcons];
+        board = cards.sort(() => Math.random() - 0.5);
+        selectedCards = [];
+        solvedCards = [];
+        canClick = true;
+        renderBoard();
+    }
+
+    // Inicia el juego al cargar la página
+    window.onload = () => initMemoria(false);
+</script>
+{% endblock %}

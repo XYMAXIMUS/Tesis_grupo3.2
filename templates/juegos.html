@@ -1,0 +1,24 @@
+{% extends 'base.html' %}
+{% block title %}Juegos de Gamificación{% endblock %}
+{% block contenido %}
+<div class="fondo-blur">
+    <div class="juegos-titulo-box">
+      <h1 class="juegos-titulo">
+        Juegos de Gamificación <span class="emoji-diversion">🎮</span>
+      </h1>
+    </div>
+
+    <div class="juegos-grid">
+      <div class="juego-card">
+        <div class="juego-emoji">🧠</div>
+        <div class="juego-nombre">Memoria</div>
+        <a href="{{ url_for('memoria') }}" class="btn-jugar-juego">Jugar</a>
+      </div>
+      <div class="juego-card">
+        <div class="juego-emoji">❌⭕</div>
+        <div class="juego-nombre">Tic Tac Toe</div>
+        <a href="{{ url_for('tictactoe') }}" class="btn-jugar-juego">Jugar</a>
+      </div>
+    </div>
+</div>  
+{% endblock %}

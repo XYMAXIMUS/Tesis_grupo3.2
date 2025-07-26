@@ -1,0 +1,31 @@
+{% extends 'base.html' %}
+{% block title %}Inventario - Gamificación UBE{% endblock %}
+
+{% block contenido %}
+<div class="fondo-blur">
+  <h2>Tu Inventario</h2>
+  
+  <div class="inventario-lista">
+    {% for item in inventario %}
+      <div class="objeto-inventario">
+        <img src="{{ url_for('static', filename=item.objeto.imagen_url) }}" alt="{{ item.objeto.nombre }}" class="objeto-imagen">
+        <div class="objeto-nombre">{{ item.objeto.nombre }}</div>
+        
+        {% set imagen_nombre = item.objeto.imagen_url.split('/')[-1] %}
+        {% set es_avatar_equipado = (item.objeto.tipo == 'avatar' and imagen_nombre == estudiante.avatar_personal) %}
+        {% set es_marco_equipado = (item.objeto.tipo == 'marco' and imagen_nombre == estudiante.marco_personal) %}
+        {% set es_fondo_equipado = (item.objeto.tipo == 'fondo' and imagen_nombre == estudiante.fondo_personal) %}
+
+        {% if es_avatar_equipado or es_marco_equipado or es_fondo_equipado %}
+          <div class="equipado">✓ Equipado</div>
+        {% else %}
+          <a href="{{ url_for('equipar', tipo=item.objeto.tipo, obj_id=item.objeto.id) }}" class="btn-equipar">Equipar</a>
+        {% endif %}
+
+      </div>
+    {% else %}
+      <p class="mensaje-vacio">Tu inventario está vacío. ¡Visita la <a href="{{ url_for('tienda') }}">tienda</a> para adquirir nuevos objetos!</p>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}

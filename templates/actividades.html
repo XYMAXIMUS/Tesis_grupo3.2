@@ -1,0 +1,101 @@
+{% extends 'base.html' %}
+{% block title %}Actividades - Gamificación UBE{% endblock %}
+
+{% block contenido %}
+<div class="fondo-blur">
+    <h2>📚 Actividades Disponibles</h2>
+    
+    <div class="actividades-lista">
+        {% if actividades %}
+            {% for actividad in actividades %}
+            <div class="actividad-card">
+                <h3>{{ actividad.nombre }}</h3>
+                <p>{{ actividad.descripcion }}</p>
+                <div class="actividad-recompensa">
+                    Recompensa: {{ actividad.puntos_recompensa }} Puntos
+                </div>
+                {# El botón siempre estará visible, ya que no rastreamos el estado de completado aquí #}
+                <a href="{{ url_for('completar_actividad', actividad_id=actividad.id) }}" class="btn-completar-actividad">Completar Actividad</a>
+            </div>
+            {% endfor %}
+        {% else %}
+            <div class="mensaje-vacio">No hay actividades disponibles en este momento.</div>
+        {% endif %}
+    </div>
+</div>
+
+<style>
+/* Estilos específicos para la página de actividades */
+.actividades-lista {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 2em;
+    margin-top: 2em;
+    justify-content: center;
+}
+
+.actividad-card {
+    background: #fff;
+    border-radius: 15px;
+    padding: 1.5em;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    text-align: center;
+    border: 1px solid #eee;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.actividad-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+}
+
+.actividad-card h3 {
+    color: #a10020;
+    margin-top: 0;
+    margin-bottom: 0.8em;
+    font-size: 1.4em;
+}
+
+.actividad-card p {
+    color: #555;
+    font-size: 0.95em;
+    margin-bottom: 1.2em;
+    flex-grow: 1; /* Permite que la descripción ocupe espacio */
+}
+
+.actividad-recompensa {
+    font-weight: bold;
+    color: #0d6efd;
+    margin-bottom: 1em;
+}
+
+.btn-completar-actividad {
+    display: inline-block;
+    padding: 10px 20px;
+    background-color: #4CAF50; /* Verde para el botón de completar */
+    color: white;
+    text-decoration: none;
+    border-radius: 8px;
+    font-weight: bold;
+    transition: background-color 0.3s ease;
+    width: 100%;
+    box-sizing: border-box; /* Incluir padding en el ancho */
+}
+
+.btn-completar-actividad:hover {
+    background-color: #45a049;
+}
+
+.mensaje-vacio {
+    grid-column: 1 / -1;
+    text-align: center;
+    padding: 2em;
+    color: #666;
+    background: #fff;
+    border-radius: 15px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+}
+</style>

@@ -1,0 +1,25 @@
+{% extends 'base.html' %}
+{% block title %}Ranking - Gamificación UBE{% endblock %}
+{% block contenido %}
+<div class="fondo-blur">
+  <h2>Ranking de estudiantes</h2>
+  <table class="tabla-ranking">
+    <thead>
+      <tr>
+        <th>Puesto</th>
+        <th>Nombre</th>
+        <th>Puntos</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for user in ranking %}
+      <tr {% if user.nombre == name %} style="background:#ffebef;font-weight:bold;"{% endif %}>
+        <td>{{ loop.index }}</td>
+        <td>{{ user.nombre }}</td>
+        <td>{{ user.puntos }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

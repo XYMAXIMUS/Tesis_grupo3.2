@@ -1,0 +1,100 @@
+{% extends 'base.html' %}
+{% block title %}Tus Logros - Gamificación UBE{% endblock %}
+
+{% block contenido %}
+<div class="fondo-blur">
+    <h2>🏅 Tus Logros Desbloqueados</h2>
+    
+    <div class="logros-grid">
+        {% if logros_obtenidos %}
+            {% for logro in logros_obtenidos %}
+            <div class="logro-card">
+                <img src="{{ url_for('static', filename='img/logros_especiales/' + logro.imagen_url) }}" alt="Logro: {{ logro.nombre }}" class="logro-imagen">
+                <div class="logro-info">
+                    <h3 class="logro-nombre">{{ logro.nombre }}</h3>
+                    <p class="logro-descripcion">{{ logro.descripcion }}</p>
+                    <span class="logro-nivel">Nivel Requerido: {{ logro.nivel_requerido }}</span>
+                </div>
+            </div>
+            {% endfor %}
+        {% else %}
+            <div class="mensaje-vacio">Aún no has desbloqueado ningún logro. ¡Sigue jugando y completando misiones!</div>
+        {% endif %}
+    </div>
+</div>
+
+<style>
+/* Estilos para la página de logros */
+.logros-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 2em;
+    margin-top: 2em;
+    justify-content: center;
+}
+
+.logro-card {
+    background: #fff;
+    border-radius: 15px;
+    padding: 1.5em;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    text-align: center;
+    border: 1px solid #eee;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.logro-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+}
+
+.logro-imagen {
+    width: 100px;
+    height: 100px;
+    object-fit: contain;
+    margin-bottom: 1em;
+    border-radius: 50%; /* Opcional: si quieres que las imágenes de logros sean circulares */
+    border: 3px solid #fcd22b; /* Color UBE amarillo */
+    padding: 5px;
+    background-color: #fff;
+}
+
+.logro-info {
+    flex-grow: 1;
+}
+
+.logro-nombre {
+    font-size: 1.3em;
+    color: #a10020;
+    margin-bottom: 0.5em;
+}
+
+.logro-descripcion {
+    font-size: 0.95em;
+    color: #555;
+    margin-bottom: 1em;
+}
+
+.logro-nivel {
+    font-size: 0.85em;
+    color: #777;
+    font-weight: bold;
+    background-color: #f0f0f0;
+    padding: 5px 10px;
+    border-radius: 5px;
+}
+
+.mensaje-vacio {
+    grid-column: 1 / -1; /* Ocupa todo el ancho del grid */
+    text-align: center;
+    padding: 2em;
+    color: #666;
+    background: #fff;
+    border-radius: 15px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+}
+</style>
+{% endblock %} {# Cierra el bloque 'contenido' #}

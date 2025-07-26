@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Puntajes - UBE</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <style>
+    body { background: url('{{ fondo if fondo else "/static/img/fondo.jpg" }}') no-repeat center center fixed !important; background-size: cover !important;}
+  </style>
+</head>
+<body>
+  <aside class="sidebar">
+    <div class="profile-block">
+      <div class="side-avatar-marco">
+        <img src="{{ avatar }}" class="side-avatar-img" alt="Avatar">
+        {% if marco %}<img src="{{ marco }}" class="side-marco-img" alt="Marco">{% endif %}
+      </div>
+      <div class="profile-info-side">
+        <span>{{ name }}</span>
+        <p>Nivel: <span id="nivel-side">{{ nivel }}</span></p>
+      </div>
+      <a href="{{ url_for('ajustes') }}" class="ajustes-btn">⚙ Ajustes</a>
+    </div>
+    <nav>
+      <a href="{{ url_for('index') }}" class="menu-link">🏠 Inicio</a>
+      <a href="{{ url_for('tienda') }}" class="menu-link">🛒 Tienda</a>
+      <a href="{{ url_for('inventario') }}" class="menu-link">🎒 Inventario</a>
+      <a href="{{ url_for('logros') }}" class="menu-link">🏅 Logros</a>
+      <a href="{{ url_for('puntajes') }}" class="menu-link active">📊 Puntajes</a>
+      <a href="{{ url_for('ranking') }}" class="menu-link">📈 Ranking</a>
+      <a href="{{ url_for('juegos') }}" class="menu-link">🎮 Juegos</a>
+    </nav>
+  </aside>
+  <main class="main-panel">
+    <h2>📊 Tus Puntajes</h2>
+    <div class="panel-puntajes">
+      <div style="font-size:1.3em; margin:20px 0;">
+        <b>Puntos actuales:</b> <span style="color:#b1001b;">{{ puntos }}</span>
+      </div>
+      <div style="margin:15px 0 8px 0; font-weight:bold;">
+        ¡Sigue participando para obtener más recompensas!
+      </div>
+    </div>
+  </main>
+</body>
+</html>

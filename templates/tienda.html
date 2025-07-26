@@ -1,0 +1,75 @@
+{% extends 'base.html' %}
+{% block title %}Tienda - Gamificación UBE{% endblock %}
+
+{% block contenido %}
+<div class="fondo-blur">
+  <h2>Tienda de Recompensas</h2>
+  <div class="puntos-tienda">
+    Tus puntos: <span id="puntos-actuales">{{ estudiante.puntos }}</span> | 
+    XP: <span id="xp-actuales">{{ estudiante.xp }}</span>
+  </div>
+  
+  <div class="tienda-lista">
+    {% for obj in objetos %}
+      <div class="objeto-tienda">
+        <img src="{{ url_for('static', filename=obj.imagen_url) }}" alt="{{ obj.nombre }}" class="objeto-imagen">
+        <div class="objeto-info">
+            <div class="objeto-nombre">{{ obj.nombre }}</div>
+            <div class="precio">{{ obj.precio }} pts</div>
+        </div>
+        
+        {% if obj.id in inventario_ids %}
+          <div class="comprado">Adquirido</div>
+        {% else %}
+          <button class="btn-comprar"
+                  onclick="abrirPopupCompra('{{ obj.id }}', '{{ obj.nombre }}', '{{ url_for('static', filename=obj.imagen_url) }}', {{ obj.precio }})">
+                  Comprar
+          </button>
+        {% endif %}
+      </div>
+    {% endfor %}
+  </div>
+</div>
+
+<div id="popupCompra" class="popup-overlay" style="display:none;">
+  <div class="popup-box">
+    <span onclick="cerrarPopupCompra()" class="popup-cerrar">&times;</span>
+    <div class="popup-contenido">
+      <img id="popupCompraImagen" src="">
+      <div>
+        <div id="popupCompraNombre"></div>
+        <div id="popupCompraPrecio"></div>
+        <div id="popupCompraPuntosAntes"></div>
+        <div id="popupCompraPuntosDespues"></div>
+        <div id="popupCompraXpActual" style="color:#1e1e1e; margin-top:5px;"></div>
+      </div>
+    </div>
+    <div class="popup-botones">
+      <a id="popupConfirmarLink" href="#" class="btn-confirmar">Confirmar compra</a>
+      <button onclick="cerrarPopupCompra()" class="btn-cancelar">Cancelar</button>
+    </div>
+  </div>
+</div>
+
+<script>
+function abrirPopupCompra(id, nombre, imagen, precio) {
+  const puntosActuales = parseInt(document.getElementById('puntos-actuales').innerText);
+  const xpActuales = parseInt(document.getElementById('xp-actuales').innerText);
+
+  document.getElementById('popupCompraNombre').textContent = nombre;
+  document.getElementById('popupCompraImagen').src = imagen;
+  document.getElementById('popupCompraPrecio').innerHTML = `Precio: <b>${precio} pts</b>`;
+  document.getElementById('popupCompraPuntosAntes').innerHTML = `Tus puntos: <b>${puntosActuales}</b>`;
+  document.getElementById('popupCompraPuntosDespues').innerHTML = `Te quedarán: <b>${Math.max(0, puntosActuales - precio)}</b>`;
+  document.getElementById('popupCompraXpActual').innerHTML = `XP Actuales: <b>${xpActuales}</b>`;
+  
+  document.getElementById('popupConfirmarLink').href = `/comprar/${id}`;
+  
+  document.getElementById('popupCompra').style.display = 'flex';
+}
+
+function cerrarPopupCompra() {
+  document.getElementById('popupCompra').style.display = 'none';
+}
+</script>
+{% endblock %}

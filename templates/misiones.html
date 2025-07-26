@@ -1,0 +1,45 @@
+{% extends 'base.html' %}
+{% block title %}Misiones - Gamificación UBE{% endblock %}
+
+{% block contenido %}
+<div class="fondo-blur">
+    <h2>Misiones y Desafíos</h2>
+    
+    <div class="mision-lista-vertical">
+        {% if misiones %}
+            {% for mision in misiones %}
+            <div class="mision-card">
+                {# 'mision' ya es el diccionario que contiene 'progreso_actual' y 'completada' #}
+                {# Por lo tanto, no necesitamos 'progreso.get(mision.id)' ni la variable 'p' #}
+
+                <div class="nombre-mision">{{ mision.nombre }}</div>
+                <div class="desc-mision">{{ mision.descripcion }}</div>
+                
+                <div class="mision-progreso-info">
+                    {# Accedemos directamente a 'mision.progreso_actual' y 'mision.meta' #}
+                    <span>Progreso: {{ mision.progreso_actual }}/{{ mision.meta }}</span>
+                    <div class="progreso-barra">
+                        <div class="progreso-barra-interna" style="width:{{ (mision.progreso_actual / mision.meta * 100)|int }}%;"></div>
+                    </div>
+                </div>
+
+                <div class="mision-recompensa">
+                    Recompensa: {{ mision.recompensa_puntos }} pts | {{ mision.recompensa_xp }} XP
+                </div>
+
+                <div class="mision-estado">
+                    {# Accedemos directamente a 'mision.completada' #}
+                    {% if mision.completada %}
+                        <span class="estado-completado">¡Completada!</span>
+                    {% else %}
+                        <span class="estado-pendiente">Pendiente</span>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        {% else %}
+            <div class="mensaje-vacio">No hay misiones disponibles.</div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>{% block title %}Gamificación UBE{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body class="layout-ube">
+
+    <nav class="menu-lateral">
+        {% if session['estudiante_id'] %}
+        <div class="perfil-menu">
+            <div class="avatar-container" style="background-image: url('{{ url_for('static', filename='img/marcos/' + marco) }}');">
+                <img src="{{ url_for('static', filename='img/avatares/' + avatar) }}" class="avatar-menu" alt="Avatar">
+            </div>
+            <div class="nombre-usuario">{{ name }}</div>
+        </div>
+        {% endif %}
+
+        <ul class="nav-links">
+            {% if session['estudiante_id'] %}
+                <li><a href="{{ url_for('index') }}" {% if activo=='panel' %}class="active"{% endif %}>Panel</a></li>
+                <li><a href="{{ url_for('tienda') }}" {% if activo=='tienda' %}class="active"{% endif %}>Tienda</a></li>
+                <li><a href="{{ url_for('inventario') }}" {% if activo=='inventario' %}class="active"{% endif %}>Inventario</a></li>
+                <li><a href="{{ url_for('mostrar_misiones') }}" {% if activo=='misiones' %}class="active"{% endif %}>Misiones</a></li>
+                <li><a href="{{ url_for('mostrar_logros') }}" {% if activo=='logros' %}class="active"{% endif %}>Logros</a></li>
+                <li><a href="{{ url_for('ranking') }}" {% if activo=='ranking' %}class="active"{% endif %}>Ranking</a></li>
+                <li><a href="{{ url_for('juegos') }}" {% if activo=='juegos' %}class="active"{% endif %}>Juegos</a></li>
+                {# ENLACE A HISTORIAL DE ACTIVIDADES (solo este) #}
+                <li><a href="{{ url_for('mostrar_historial_actividades') }}" {% if activo=='historial_actividades' %}class="active"{% endif %}>Historial Act.</a></li>
+                <li><a href="{{ url_for('logout') }}">Cerrar Sesión</a></li>
+            {% else %}
+                <li><a href="{{ url_for('login') }}">Iniciar Sesión</a></li>
+                <li><a href="{{ url_for('registro') }}">Registrarse</a></li>
+            {% endif %}
+        </ul>
+    </nav>
+
+    <main class="contenido-central">
+        <button class="btn-mostrar-misiones" onclick="toggleMisiones()">Misiones ☰</button>
+        <div id="flash-container">
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ category }}">{{ message }}</div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+        </div>
+        {% block contenido %}{% endblock %}
+    </main>
+
+    {% if session['estudiante_id'] %}
+    <aside class="sidebar-misiones">
+        <button class="btn-ocultar" onclick="toggleMisiones()">Ocultar</button>
+        <h3>
+            Misiones
+            {% if misiones_activas_count > 0 %}
+                <span class="mision-conteo">{{ misiones_activas_count }}</span>
+            {% endif %}
+        </h3>
+        <div class="lista-misiones">
+            {% for p in misiones_sidebar if not p.completada %}
+                {% if loop.index <= 3 %}
+                    <div class="mision-mini">
+                        <div class="nombre-mision">{{ p.mision.nombre }}</div>
+                        <div class="prog-mision">
+                          Progreso: {{ p.progreso }}/{{ p.mision.meta }}
+                          <div class="progreso-barra">
+                            <div class="progreso-barra-interna" style="width: {{ (p.progreso / p.mision.meta * 100) | int }}%;"></div>
+
+                          </div>
+                        </div>
+                    </div>
+                {% endif %}
+            {% endfor %}
+            <a href="{{ url_for('mostrar_misiones') }}" class="btn-ver-todas">Ver Todas</a>
+        </div>
+    </aside>
+    {% endif %}
+
+<script>
+function toggleMisiones() {
+    document.body.classList.toggle('misiones-ocultas');
+}
+
+// Script para ocultar mensajes flash
+document.addEventListener('DOMContentLoaded', (event) => {
+    const flashContainer = document.getElementById('flash-container');
+    if (flashContainer && flashContainer.children.length > 0) {
+        setTimeout(() => {
+            flashContainer.style.opacity = '0';
+            setTimeout(() => {
+                flashContainer.style.display = 'none';
+            }, 500);
+        }, 2000);
+    }
+});
+</script>
+</body>
+</html>

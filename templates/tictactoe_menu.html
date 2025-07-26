@@ -1,0 +1,31 @@
+{% extends 'base.html' %}
+{% block title %}Tic Tac Toe - Menú de Modos{% endblock %}
+{% block contenido %}
+<div class="fondo-blur" style="max-width:510px;margin:auto;">
+  <h2 style="text-align:center;">Tic Tac Toe - Elige el Modo de Juego</h2>
+  <div style="display:flex; gap:2em; justify-content:center; margin-top:2em; flex-wrap:wrap;">
+    <!-- Bot -->
+    <form method="get" action="{{ url_for('tictactoe') }}" style="min-width:220px;">
+      <input type="hidden" name="modo" value="bot">
+      <label for="dificultad-bot"><b>Dificultad:</b></label>
+      <select id="dificultad-bot" name="dificultad" class="form-control" style="margin-bottom:1em;">
+        <option value="facil">Fácil</option>
+        <option value="normal" selected>Normal</option>
+        <option value="dificil">Difícil</option>
+      </select>
+      <button type="submit" class="btn btn-primary w-100">Jugar contra Bot 🤖</button>
+    </form>
+    <!-- Dos jugadores -->
+    <form method="get" action="{{ url_for('tictactoe') }}" style="min-width:220px;">
+      <input type="hidden" name="modo" value="2jugadores">
+      <label for="dificultad-2j"><b>Dificultad:</b></label>
+      <select id="dificultad-2j" name="dificultad" class="form-control" style="margin-bottom:1em;">
+        <option value="facil">Fácil</option>
+        <option value="normal" selected>Normal</option>
+        <option value="dificil">Difícil</option>
+      </select>
+      <button type="submit" class="btn btn-success w-100">Jugar 2 Jugadores 👫</button>
+    </form>
+  </div>
+</div>
+{% endblock %}

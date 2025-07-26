@@ -1,0 +1,269 @@
+{% extends 'base.html' %}
+{% block title %}Tic Tac Toe - Gamificación UBE{% endblock %}
+{% block contenido %}
+<div class="fondo-blur" style="max-width:510px;margin:auto;">
+    <h2 style="text-align:center;">Juego: Tic Tac Toe</h2>
+    <div class="juego-info-panel">
+        <div><b>Modo:</b> <span id="modo-label">{% if modo == "bot" %}Contra Bot{% else %}Dos Personas{% endif %}</span></div>
+        <div>
+            <b>Ganancia:</b>
+            <span id="puntos-label">{{ puntos_ganar }}</span> pts | <span id="xp-label">{{ xp_ganar }}</span> XP
+            {% if penalizacion %}
+                <span class="penalizacion">(Pierdes {{ penalizacion }} pts si pierdes)</span>
+            {% endif %}
+        </div>
+        <div>
+            <b>Cambiar dificultad:</b>
+            <form id="form-dificultad" method="get" action="{{ url_for('tictactoe') }}" style="display:inline;">
+                <input type="hidden" name="modo" value="{{ modo }}">
+                <select name="dificultad" id="dificultad-select" onchange="document.getElementById('form-dificultad').submit()">
+                    <option value="facil" {% if dificultad == 'facil' %}selected{% endif %}>Fácil</option>
+                    <option value="normal" {% if dificultad == 'normal' %}selected{% endif %}>Normal</option>
+                    <option value="dificil" {% if dificultad == 'dificil' %}selected{% endif %}>Difícil</option>
+                </select>
+            </form>
+        </div>
+    </div>
+    <div style="text-align:right;margin-bottom:15px;">
+        <a href="{{ url_for('tictactoe_volver_menu') }}" class="btn btn-secondary">⬅ Volver al menú de modos</a>
+        <br>
+        <a href="{{ url_for('juegos') }}" class="btn btn-secondary">⬅ Volver al menú de juegos</a>
+    </div>
+    <div id="ttt-area">
+        <div id="ttt-status" style="margin-bottom:1em;font-weight:bold;text-align:center;">Turno: <span id="turno">X</span></div>
+        <div class="ttt-board"></div>
+        <button class="btn-inicio" onclick="reiniciar()">Reiniciar</button>
+    </div>
+</div>
+<style>
+.juego-info-panel {
+  background: #f6e9f6;
+  padding: 1em 1.6em;
+  border-radius: 14px;
+  margin-bottom: 1.5em;
+  font-size: 1.08em;
+  color: #72002b;
+  box-shadow: 0 2px 10px #c6002a11;
+}
+.juego-info-panel select { margin-left: 1em; border-radius: 7px; }
+.penalizacion { color: #c6002a; margin-left:1.5em; font-weight:bold; }
+.ttt-board {
+  display: grid;
+  grid-template-columns: repeat(3,60px);
+  grid-template-rows: repeat(3,60px);
+  gap: 6px;
+  margin: 0 auto 1.2em auto;
+  justify-content: center;
+}
+.ttt-cell {
+  width: 60px; height: 60px;
+  background: #fff;
+  color: #c6002a;
+  border: 2.3px solid #c6002a77;
+  font-size: 2em;
+  font-weight: bold;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer;
+  border-radius: 13px;
+  transition: background 0.2s;
+}
+.ttt-cell:hover { background: #ffe7ee; }
+</style>
+<script>
+let modoJuego = "{{ modo }}";
+let dificultad = "{{ dificultad }}";
+let penalizacion = {{ penalizacion }};
+let board = Array(9).fill(null);
+let current = 'X';
+let gameOver = false;
+let bot = (modoJuego === "bot");
+
+// Función unificada para enviar resultados de juego al backend
+function enviarResultado(resultadoJuego, juegoTipo, dificultadJuego) {
+    fetch("{{ url_for('juego_resultado') }}", {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            juego: juegoTipo,
+            resultado: resultadoJuego,
+            dificultad: dificultadJuego
+        })
+    }).then(response => response.json())
+      .then(data => {
+          if (data.status === 'ok') {
+              console.log('Resultado enviado correctamente:', data);
+              // Opcional: Actualizar XP/Puntos en la interfaz si lo necesitas
+              // Por ejemplo: document.getElementById('xp-label-sidebar').textContent = data.nuevos_xp;
+          } else {
+              console.error('Error al enviar resultado:', data.message);
+          }
+      })
+      .catch(error => console.error('Error de red al enviar resultado:', error));
+}
+
+
+function render() {
+  let boardDiv = document.querySelector('.ttt-board');
+  boardDiv.innerHTML = '';
+  board.forEach((cell, i) => {
+    let div = document.createElement('div');
+    div.className = 'ttt-cell';
+    div.textContent = cell ? cell : '';
+    div.onclick = () => {
+      if (gameOver || board[i]) return;
+      board[i] = current;
+      render();
+      let win = checkWinner();
+      if(win){
+        gameOver = true;
+        updateStatus(win === "Empate" ? "¡Empate!" : "¡Ganó: " + win + "!");
+        
+        // Enviar resultado al backend
+        if (win === 'X') { // Si el jugador (X) gana
+            enviarResultado('ganado', 'tictactoe', dificultad);
+        } else if (win === 'Empate') { // Si es un empate
+            enviarResultado('empatado', 'tictactoe', dificultad);
+        } else if (win === 'O') { // Si el bot (O) gana, significa que el jugador perdió
+            enviarResultado('perdido', 'tictactoe', dificultad);
+        }
+        return;
+      }
+      current = current === 'X' ? 'O':'X';
+      updateStatus("Turno: <span id='turno'>" + current + "</span>");
+      if(bot && current === 'O' && !gameOver){
+        setTimeout(()=>{ botMove(); }, 450);
+      }
+    };
+    boardDiv.appendChild(div);
+  });
+}
+
+function updateStatus(msg) {
+  document.getElementById('ttt-status').innerHTML = msg;
+}
+
+function checkWinner() {
+  const win = [
+    [0,1,2],[3,4,5],[6,7,8],
+    [0,3,6],[1,4,7],[2,5,8],
+    [0,4,8],[2,4,6]
+  ];
+  for(let l of win){
+    if(board[l[0]] && board[l[0]] === board[l[1]] && board[l[1]] === board[l[2]])
+      return board[l[0]];
+  }
+  if(board.every(cell=>cell)) return "Empate";
+  return null;
+}
+
+function reiniciar() {
+  board = Array(9).fill(null);
+  current = 'X';
+  gameOver = false;
+  updateStatus("Turno: <span id='turno'>X</span>");
+  render();
+}
+
+function botMove() {
+  let idx;
+  if (dificultad === 'dificil') {
+    idx = bestMoveMinimax();
+  } else if (dificultad === 'facil') {
+    let idxs = board.map((c,i)=>c?null:i).filter(i=>i!==null);
+    idx = idxs[Math.floor(Math.random()*idxs.length)];
+  } else { // dificultad 'normal'
+    if (Math.random() < 0.7) { // 70% de las veces, el bot juega aleatoriamente
+      let idxs = board.map((c,i)=>c?null:i).filter(i=>i!==null);
+      idx = idxs[Math.floor(Math.random()*idxs.length)];
+    } else { // 30% de las veces, usa minimax para un movimiento 'inteligente'
+      idx = bestMoveMinimax();
+    }
+  }
+  if(idx !== undefined && idx !== null){
+    board[idx] = 'O';
+    render();
+    let win = checkWinner();
+    if(win){
+      gameOver = true;
+      updateStatus(win === "Empate" ? "¡Empate!" : "¡Ganó: " + win + "!");
+      // Enviar resultado al backend
+      if (win === 'O') { // Si el bot (O) gana, significa que el jugador perdió
+          enviarResultado('perdido', 'tictactoe', dificultad);
+      } else if (win === 'Empate') { // Si es un empate
+          enviarResultado('empatado', 'tictactoe', dificultad);
+      }
+    }else{
+      current = 'X';
+      updateStatus("Turno: <span id='turno'>" + current + "</span>");
+    }
+  }
+}
+
+function bestMoveMinimax() {
+    let bestScore = -Infinity;
+    let move;
+    for (let i = 0; i < 9; i++) {
+        if (!board[i]) {
+            board[i] = 'O';
+            let score = minimax(board, 0, false);
+            board[i] = null;
+            if (score > bestScore) {
+                bestScore = score;
+                move = i;
+            }
+        }
+    }
+    return move;
+}
+
+function minimax(newBoard, depth, isMaximizing) {
+    let winner = checkWinnerMinimax(newBoard);
+    if (winner !== null) {
+        if (winner === 'O') return 10 - depth;
+        if (winner === 'X') return depth - 10;
+        if (winner === 'Empate') return 0;
+    }
+    if (isMaximizing) {
+        let best = -Infinity;
+        for (let i = 0; i < 9; i++) {
+            if (!newBoard[i]) {
+                newBoard[i] = 'O';
+                let val = minimax(newBoard, depth + 1, false);
+                newBoard[i] = null;
+                best = Math.max(best, val);
+            }
+        }
+        return best;
+    } else {
+        let best = Infinity;
+        for (let i = 0; i < 9; i++) {
+            if (!newBoard[i]) {
+                newBoard[i] = 'X';
+                let val = minimax(newBoard, depth + 1, true);
+                newBoard[i] = null;
+                best = Math.min(best, val);
+            }
+        }
+        return best;
+    }
+}
+
+function checkWinnerMinimax(b) {
+    const win = [
+      [0,1,2],[3,4,5],[6,7,8],
+      [0,3,6],[1,4,7],[2,5,8],
+      [0,4,8],[2,4,6]
+    ];
+    for(let l of win){
+      if(b[l[0]] && b[l[0]] === b[l[1]] && b[l[1]] === b[l[2]])
+        return b[l[0]];
+    }
+    if(b.every(cell=>cell)) return "Empate";
+    return null;
+}
+
+window.onload = function() {
+  reiniciar();
+};
+</script>
+{% endblock %}
