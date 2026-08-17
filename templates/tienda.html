@@ -12,7 +12,7 @@
   <div class="tienda-lista">
     {% for obj in objetos %}
       <div class="objeto-tienda">
-        <img src="{{ url_for('static', filename=obj.imagen_url) }}" alt="{{ obj.nombre }}" class="objeto-imagen">
+        <img src="{{ url_for('static', filename='img/' + obj.imagen_url) }}" alt="{{ obj.nombre }}" class="objeto-imagen">
         <div class="objeto-info">
             <div class="objeto-nombre">{{ obj.nombre }}</div>
             <div class="precio">{{ obj.precio }} pts</div>
@@ -22,7 +22,7 @@
           <div class="comprado">Adquirido</div>
         {% else %}
           <button class="btn-comprar"
-                  onclick="abrirPopupCompra('{{ obj.id }}', '{{ obj.nombre }}', '{{ url_for('static', filename=obj.imagen_url) }}', {{ obj.precio }})">
+                  onclick="abrirPopupCompra('{{ obj.id }}', '{{ obj.nombre }}', '{{ url_for('static', filename='img/' + obj.imagen_url) }}', {{ obj.precio }})">
                   Comprar
           </button>
         {% endif %}
