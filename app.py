@@ -32,11 +32,6 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db = SQLAlchemy(app)
 
-# CREAR TABLAS Y POBLAR DATOS AL CARGAR EL MÓDULO (Para Gunicorn en Render)
-with app.app_context():
-    db.create_all()
-    # Si la base de datos está vacía, se pueden cargar las misiones/objetos/logros iniciales aquí
-
 # --- CONFIGURACIÓN DE ARCHIVOS ---
 UPLOAD_FOLDER = os.path.join("static", "img", "avatares")
 app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
@@ -145,7 +140,9 @@ class EstudianteActividadCompletada(db.Model):
     fecha_completado = db.Column(db.DateTime, default=db.func.current_timestamp())
 
     actividad = db.relationship('Actividad', backref='completada_por_estudiantes')
-
+# 3. CREAR TABLAS (AQUÍ SÍ, DESPUÉS DE DECLARAR TODOS LOS MODELOS)
+with app.app_context():
+    db.create_all()
 
 # --- FUNCIONES AUXILIARES DE GAMIFICACIÓN ---
 
