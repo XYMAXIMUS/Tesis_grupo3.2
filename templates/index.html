@@ -11,30 +11,27 @@
 <div class="panel-central-inicio fondo-blur">
     <div class="usuario-box-inicio">
         <div class="avatar-con-marco">
-            {# Asegúrate de que estudiante.marco_personal no sea None antes de usarlo #}
             {% if estudiante.marco_personal %}
             <img src="{{ url_for('static', filename='img/marcos/' + estudiante.marco_personal) }}" class="marco-inicio" alt="Marco">
             {% endif %}
             <img src="{{ url_for('static', filename='img/avatares/' + estudiante.avatar_personal) }}" class="avatar-inicio" alt="Avatar">
 
-            {# NUEVO: Mostrar el logro más reciente/primero junto al avatar #}
             {% if estudiante.logros.all() %}
-                {% set primer_logro = estudiante.logros.all()[0] %} {# Obtiene el primer logro #}
-                <img src="{{ url_for('static', filename='img/logros_especiales/' + primer_logro.imagen_url) }}" 
+                {% set primer_logro = estudiante.logros.all()[0] %}
+                <img src="{{ url_for('static', filename='img/' + primer_logro.imagen_url) }}" 
                      class="logro-pequeno-avatar" 
                      alt="Logro: {{ primer_logro.nombre }}"
-                     title="Logro: {{ primer_logro.nombre }}"> {# El title mostrará el nombre al pasar el ratón #}
+                     title="Logro: {{ primer_logro.nombre }}">
             {% endif %}
         </div>
         <div class="nivel-puntos-inicio">
-            <span class="nivel-inicio"><b>Nivel:</b> {{ estudiante.nivel }}</span> {# Usar estudiante.nivel directamente #}
+            <span class="nivel-inicio"><b>Nivel:</b> {{ estudiante.nivel }}</span>
             <span class="puntos-inicio"><b>Puntos:</b> {{ estudiante.puntos }}</span>
         </div>
         <div class="barra-xp-outer" style="margin:1em 0 0.4em 0;">
             <div class="barra-xp-inner" style="width: {{ progreso_xp }}%;"></div>
         </div>
         <div style="color:#888; font-size:0.97em; margin-bottom:1em;">
-            {# Usar las variables correctas pasadas desde app.py #}
             XP: {{ xp_actual }} / {{ xp_siguiente_nivel_total }} (Faltan {{ xp_restante_para_siguiente_nivel }} XP)
         </div>
     </div>
@@ -44,9 +41,7 @@
         <a href="{{ url_for('ranking') }}" class="btn btn-inicio">📈 Ranking</a>
         <a href="{{ url_for('ajustes') }}" class="btn btn-inicio">⚙ Ajustes</a>
         <a href="{{ url_for('juegos') }}" class="btn btn-inicio">🎮 Juegos</a>
-        {# CORRECCIÓN: Cambiado 'misiones' a 'mostrar_misiones' #}
         <a href="{{ url_for('mostrar_misiones') }}" class="btn btn-inicio" style="background:#fffae0;color:#c6002a;border:2px solid #fcd22b;">📜 Misiones</a>
-        {# Asegúrate de añadir el enlace a Logros si lo quieres aquí, usando el endpoint correcto #}
         <a href="{{ url_for('mostrar_logros') }}" class="btn btn-inicio" style="background:#e0f7fa;color:#00796b;border:2px solid #00bcd4;">🏅 Logros</a>
     </div>
 </div>
