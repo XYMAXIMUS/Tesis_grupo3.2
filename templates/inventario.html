@@ -8,7 +8,7 @@
   <div class="inventario-lista">
     {% for item in inventario %}
       <div class="objeto-inventario">
-        <img src="{{ url_for('static', filename=item.objeto.imagen_url) }}" alt="{{ item.objeto.nombre }}" class="objeto-imagen">
+        <img src="{{ url_for('static', filename='img/' + item.objeto.imagen_url) }}" alt="{{ item.objeto.nombre }}" class="objeto-imagen">
         <div class="objeto-nombre">{{ item.objeto.nombre }}</div>
         
         {% set imagen_nombre = item.objeto.imagen_url.split('/')[-1] %}
