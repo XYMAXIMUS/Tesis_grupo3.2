@@ -66,7 +66,7 @@ class Estudiante(db.Model):
     xp = db.Column(db.Integer, default=0, nullable=False)
     nivel = db.Column(db.Integer, default=1, nullable=False)
     avatar_personal = db.Column(db.String(255), default='avatar-1.png')
-    marco_personal = db.Column(db.String(255), default='marco-1.png')
+    marco_personal = db.Column(db.String(255), default='marco_amarillo.png')
     fondo_personal = db.Column(db.String(255))
     
     inventario = db.relationship('Inventario', backref='estudiante', lazy=True, cascade="all, delete-orphan")
@@ -134,7 +134,7 @@ class EstudianteActividadCompletada(db.Model):
 
     actividad = db.relationship('Actividad', backref='completada_por_estudiantes')
 
-# --- CREACIÓN DE TABLAS Y DATOS INICIALES ---
+# --- CREACIÓN DE TABLAS Y DATOS INICIALES CORREGIDOS CON TUS ARCHIVOS REALES ---
 with app.app_context():
     db.create_all()
 
@@ -153,18 +153,25 @@ with app.app_context():
         ]
         db.session.add_all(misiones_iniciales)
 
+        # OBJETOS REALES SEGÚN TUS CAPTURAS (avatares, marcos, fondos)
         objetos_iniciales = [
-            Objeto(nombre="Avatar de Panda", tipo="avatar", descripcion="Un adorable avatar de panda.", imagen_url="avatar-2.png", precio=50),
-            Objeto(nombre="Avatar de Cohete", tipo="avatar", descripcion="Un avatar que te llevará a las estrellas.", imagen_url="avatar-3.png", precio=75),
-            Objeto(nombre="Marco Estelar", tipo="marco", descripcion="Un marco brillante para tu perfil.", imagen_url="marco-2.png", precio=100),
-            Objeto(nombre="Marco de Bosque", tipo="marco", descripcion="Un marco que te conecta con la naturaleza.", imagen_url="marco-3.png", precio=80),
+            Objeto(nombre="Avatar Gamer 2", tipo="avatar", descripcion="Un avatar moderno para tu perfil.", imagen_url="avatares/avatar-2.png", precio=50),
+            Objeto(nombre="Avatar Gamer 3", tipo="avatar", descripcion="Muestra tu estilo competitivo.", imagen_url="avatares/avatar-3.png", precio=75),
+            Objeto(nombre="Marco Azul", tipo="marco", descripcion="Marco brillante de tono azul.", imagen_url="marcos/marco_azul.png", precio=100),
+            Objeto(nombre="Marco Celeste", tipo="marco", descripcion="Marco fresco color celeste.", imagen_url="marcos/marco_celeste.png", precio=80),
+            Objeto(nombre="Marco Morado", tipo="marco", descripcion="Marco elegante de color morado.", imagen_url="marcos/marco_morado.png", precio=120),
+            Objeto(nombre="Marco Rojo", tipo="marco", descripcion="Marco intenso de color rojo.", imagen_url="marcos/marco_rojo.png", precio=100),
+            Objeto(nombre="Fondo Bosque", tipo="fondo", descripcion="Un sereno fondo natural.", imagen_url="fondos/bosque.png", precio=150),
+            Objeto(nombre="Fondo Cielo", tipo="fondo", descripcion="Un hermoso fondo del cielo.", imagen_url="fondos/cielo.png", precio=150)
         ]
         db.session.add_all(objetos_iniciales)
 
+        # LOGROS REALES SEGÚN TUS CAPTURAS (medallas)
         logros_iniciales = [
-            Logro(nombre="Novato Gamificado", descripcion="Alcanza el nivel 2.", imagen_url="logro-novato.png", nivel_requerido=2),
-            Logro(nombre="Aprendiz Experto", descripcion="Alcanza el nivel 5.", imagen_url="logro-experto.png", nivel_requerido=5),
-            Logro(nombre="Maestro de Puntos", descripcion="Consigue 500 puntos.", imagen_url="logro-puntos.png", nivel_requerido=1),
+            Logro(nombre="Primer Paso", descripcion="Realiza tu primera compra en la tienda.", imagen_url="medallas/Medalla_Primer_Compra.png", nivel_requerido=1),
+            Logro(nombre="Explorador", descripcion="Juega diversas partidas en la plataforma.", imagen_url="medallas/Medalla_Explorador_de_Juegos.png", nivel_requerido=1),
+            Logro(nombre="Maestro de Memoria", descripcion="Demuestra tus habilidades de memoria.", imagen_url="medallas/Medalla_Maestro_de_Memoria.png", nivel_requerido=2),
+            Logro(nombre="Constancia Semanal", descripcion="Mantén tu actividad constante en la plataforma.", imagen_url="medallas/Medalla_Constancia_Semanal.png", nivel_requerido=3),
         ]
         db.session.add_all(logros_iniciales)
 
@@ -177,9 +184,7 @@ with app.app_context():
         db.session.add_all(actividades_iniciales)
 
         db.session.commit()
-        print("¡Datos iniciales cargados con éxito!")
-    else:
-        print("La base de datos ya contiene misiones, no se añadieron datos iniciales.")
+        print("¡Datos iniciales actualizados correctamente!")
 
 # --- FUNCIONES AUXILIARES DE GAMIFICACIÓN ---
 
@@ -531,7 +536,7 @@ def resetear_progreso():
     estudiante.xp = 0
     estudiante.nivel = 1
     estudiante.avatar_personal = 'avatar-1.png'
-    estudiante.marco_personal = 'marco-1.png'
+    estudiante.marco_personal = 'marco_amarillo.png'
     estudiante.fondo_personal = None
     
     Inventario.query.filter_by(estudiante_id=estudiante.id).delete()
