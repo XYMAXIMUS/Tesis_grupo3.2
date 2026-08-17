@@ -22,11 +22,22 @@ app = Flask(__name__)
 app.secret_key = os.environ.get("FLASK_SECRET_KEY", "una_clave_secreta_super_segura_y_aleatoria_para_produccion_12345") 
 
 # --- CONFIGURACIÓN DE LA BASE DE DATOS ---
-app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://postgres:12345678@localhost:5432/db_tesis'
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False # Para silenciar un warning de SQLAlchemy
+# Lee la variable de entorno de Render; si no existe, usa la conexión local
+db_url = os.environ.get('DATABASE_URL', 'postgresql://postgres:12345678@localhost:5432/db_tesis')
+
+# Corrección de protocolo para compatibilidad con SQLAlchemy en la nube
+if db_url and db_url.startswith("postgres://"):
+    db_url = db_url.replace("postgres://", "postgresql://", 1)
+
+app.config['SQLALCHEMY_DATABASE_URI'] = db_url
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 # Inicializa la extensión de SQLAlchemy
 db = SQLAlchemy(app)
+
+# CREACIÓN AUTOMÁTICA DE TABLAS (Se ejecuta siempre al iniciar la app en Render)
+with app.app_context():
+    db.create_all()
 
 # --- CONFIGURACIÓN DE ARCHIVOS ---
 UPLOAD_FOLDER = os.path.join("static", "img", "avatares")
