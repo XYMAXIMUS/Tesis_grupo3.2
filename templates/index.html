@@ -11,11 +11,15 @@
 <div class="panel-central-inicio fondo-blur">
     <div class="usuario-box-inicio">
         <div class="avatar-con-marco">
-            {% if estudiante.marco_personal %}
-            <img src="{{ url_for('static', filename='img/marcos/' + estudiante.marco_personal) }}" class="marco-inicio" alt="Marco">
-            {% endif %}
+            <!-- Foto del avatar centrada (capa inferior) -->
             <img src="{{ url_for('static', filename='img/avatares/' + estudiante.avatar_personal) }}" class="avatar-inicio" alt="Avatar">
 
+            <!-- Marco superpuesto (capa superior - solo si está desbloqueado/equipado) -->
+            {% if estudiante.marco_personal and estudiante.marco_personal != 'None' and estudiante.marco_personal != '' %}
+                <img src="{{ url_for('static', filename='img/marcos/' + estudiante.marco_personal) }}" class="marco-inicio" alt="Marco">
+            {% endif %}
+
+            <!-- Medalla/Logro pequeño -->
             {% if estudiante.logros.all() %}
                 {% set primer_logro = estudiante.logros.all()[0] %}
                 <img src="{{ url_for('static', filename='img/' + primer_logro.imagen_url) }}" 
@@ -24,17 +28,21 @@
                      title="Logro: {{ primer_logro.nombre }}">
             {% endif %}
         </div>
+
         <div class="nivel-puntos-inicio">
             <span class="nivel-inicio"><b>Nivel:</b> {{ estudiante.nivel }}</span>
             <span class="puntos-inicio"><b>Puntos:</b> {{ estudiante.puntos }}</span>
         </div>
+
         <div class="barra-xp-outer" style="margin:1em 0 0.4em 0;">
             <div class="barra-xp-inner" style="width: {{ progreso_xp }}%;"></div>
         </div>
+
         <div style="color:#888; font-size:0.97em; margin-bottom:1em;">
             XP: {{ xp_actual }} / {{ xp_siguiente_nivel_total }} (Faltan {{ xp_restante_para_siguiente_nivel }} XP)
         </div>
     </div>
+
     <div class="accesos-rapidos-inicio">
         <a href="{{ url_for('tienda') }}" class="btn btn-inicio">🛒 Tienda</a>
         <a href="{{ url_for('inventario') }}" class="btn btn-inicio">🎒 Inventario</a>
