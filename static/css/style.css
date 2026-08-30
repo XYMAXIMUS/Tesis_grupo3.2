@@ -41,25 +41,29 @@ body.layout-ube {
     border-bottom: 1px solid rgba(255, 255, 255, 0.2);
 }
 
+/* CONTENEDOR Y ALINEACIÓN DE MARCO/AVATAR EN BARRA LATERAL */
 .avatar-container {
     position: relative;
-    width: 90px;
-    height: 90px;
+    width: 100px;
+    height: 100px;
     margin: 0 auto 10px auto;
     display: flex;
     align-items: center;
     justify-content: center;
 }
 
+/* Avatar recortado y alineado al hueco circular del marco */
 .avatar-menu {
-    width: 70%;
-    height: 70%;
+    width: 58%;
+    height: 58%;
     border-radius: 50%;
     object-fit: cover;
     position: relative;
+    top: -5px; /* Desplaza el avatar hacia arriba para centrar en el marco */
     z-index: 1;
 }
 
+/* Marco superpuesto en la capa superior */
 .marco-menu {
     position: absolute;
     top: 0;
@@ -233,25 +237,26 @@ body.misiones-ocultas .btn-mostrar-misiones {
 /* CONTENEDOR PRINCIPAL DEL AVATAR CON MARCO EN INDEX.HTML */
 .avatar-con-marco {
     position: relative;
-    width: 130px;
-    height: 130px;
+    width: 140px;
+    height: 140px;
     margin: 0 auto 15px auto;
     display: flex;
     align-items: center;
     justify-content: center;
 }
 
-/* FOTO DE PERFIL EN EL PANEL CENTRAL */
+/* FOTO DE PERFIL CENTRADA EN EL PANEL CENTRAL */
 .avatar-inicio {
-    width: 75%;
-    height: 75%;
+    width: 58%;
+    height: 58%;
     border-radius: 50%;
     object-fit: cover;
     position: relative;
+    top: -7px; /* Eleva la foto para calzar en el centro exacto del marco */
     z-index: 1;
 }
 
-/* MARCO EN EL PANEL CENTRAL */
+/* MARCO SUPERPUESTO EN EL PANEL CENTRAL */
 .marco-inicio {
     position: absolute;
     top: 0;
