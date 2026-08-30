@@ -1,4 +1,6 @@
-/* --- ESTILOS GENERALES Y LAYOUT ORIGINAL --- */
+
+
+```css
 body {
     font-family: Arial, sans-serif;
     margin: 0;
@@ -7,7 +9,7 @@ body {
     background-attachment: fixed !important;
 }
 
-.layout-ube {
+body.layout-ube {
     display: grid;
     grid-template-columns: 240px 1fr 280px; /* Izquierda, Centro, Derecha */
     height: 100vh;
@@ -40,20 +42,51 @@ body {
     padding: 20px;
     border-bottom: 1px solid rgba(255, 255, 255, 0.2);
 }
+
+/* --- CONTENEDOR DE AVATAR Y MARCO SUPERPUESTO (CORREGIDO) --- */
 .avatar-container {
-    width: 100px; height: 100px;
-    margin: 0 auto 10px;
     position: relative;
-    background-size: cover;
-    background-position: center;
+    width: 90px;
+    height: 90px;
+    margin: 0 auto 10px auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
+
+/* Imagen del avatar (foto recortada) */
 .avatar-menu {
-    width: 100%; height: 100%;
+    width: 70%;
+    height: 70%;
     border-radius: 50%;
-    border: 3px solid white;
+    object-fit: cover;
+    position: relative;
+    z-index: 1;
 }
-.nombre-usuario { font-weight: bold; font-size: 1.2em; }
-.nav-links { list-style: none; padding: 0; margin: 20px 0 0 0; }
+
+/* Imagen del marco (superposición que ajusta exacto) */
+.marco-menu {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    z-index: 2;
+    pointer-events: none;
+}
+
+.nombre-usuario { 
+    font-weight: bold; 
+    font-size: 1.2em; 
+}
+
+.nav-links { 
+    list-style: none; 
+    padding: 0; 
+    margin: 20px 0 0 0; 
+}
+
 .nav-links li a {
     display: block;
     padding: 15px 25px;
@@ -62,7 +95,8 @@ body {
     transition: background 0.2s;
     font-weight: bold;
 }
-.nav-links li a:hover, .nav-links li a.activo {
+
+.nav-links li a:hover, .nav-links li a.activo, .nav-links li a.active {
     background: #c6002a;
 }
 
@@ -74,11 +108,17 @@ body {
     flex-direction: column;
     border-left: 1px solid #e0e0e0;
 }
+
 .btn-ocultar {
-    background: #e0e0e0; border: none; border-radius: 8px;
-    padding: 5px 10px; cursor: pointer;
-    align-self: flex-end; margin-bottom: 1em;
+    background: #e0e0e0; 
+    border: none; 
+    border-radius: 8px;
+    padding: 5px 10px; 
+    cursor: pointer;
+    align-self: flex-end; 
+    margin-bottom: 1em;
 }
+
 .mision-mini {
     background: white;
     padding: 10px;
@@ -86,19 +126,92 @@ body {
     margin-bottom: 10px;
     border: 1px solid #ddd;
 }
-.nombre-mision { font-weight: bold; }
-.progreso-barra {
-    width: 100%; height: 8px; background: #eee;
-    border-radius: 4px; margin-top: 5px; overflow: hidden;
-}
-.progreso-barra-interna {
-    height: 100%; background: #c6002a;
-    border-radius: 4px; transition: width 0.3s;
+
+.nombre-mision { 
+    font-weight: bold; 
 }
 
-/* Lógica para ocultar la barra de misiones */
-.layout-ube.misiones-ocultas .sidebar-misiones { display: none; }
-.layout-ube.misiones-ocultas { grid-template-columns: 240px 1fr; }
+.progreso-barra {
+    width: 100%; 
+    height: 8px; 
+    background: #eee;
+    border-radius: 4px; 
+    margin-top: 5px; 
+    overflow: hidden;
+}
+
+.progreso-barra-interna {
+    height: 100%; 
+    background: #c6002a;
+    border-radius: 4px; 
+    transition: width 0.3s;
+}
+
+.lista-misiones {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+.btn-ver-todas {
+    margin-top: auto;
+    padding: 10px;
+    background-color: #ddd;
+    border-radius: 8px;
+    text-align: center;
+    text-decoration: none;
+    font-weight: bold;
+    color: #333;
+}
+
+.btn-ver-todas:hover {
+    background-color: #ccc;
+}
+
+/* --- LÓGICA PARA OCULTAR LA BARRA DE MISIONES --- */
+body.misiones-ocultas .sidebar-misiones { 
+    display: none; 
+}
+
+body.misiones-ocultas { 
+    grid-template-columns: 240px 1fr; 
+}
+
+.btn-mostrar-misiones {
+    display: none; 
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 100;
+    background-color: #a10020;
+    color: white;
+    border: none;
+    border-radius: 10px;
+    padding: 10px 15px;
+    font-weight: bold;
+    cursor: pointer;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+}
+
+body.misiones-ocultas .btn-mostrar-misiones {
+    display: block;
+}
+
+.sidebar-misiones h3 {
+    display: flex;
+    align-items: center;
+}
+
+.mision-conteo {
+    display: inline-block;
+    background-color: #c6002a;
+    color: white;
+    font-size: 0.75em;
+    font-weight: bold;
+    padding: 3px 9px;
+    border-radius: 50%;
+    margin-left: 10px;
+}
 
 /* --- ESTILOS DEL PANEL PRINCIPAL (index.html) --- */
 .panel-grid {
@@ -106,19 +219,25 @@ body {
     grid-template-columns: 300px 1fr;
     gap: 2em;
 }
+
 .usuario-box-inicio {
     padding: 1.5em;
     text-align: center;
 }
+
 .avatar-inicio {
-    width: 100px; height: 100px; border-radius: 50%;
+    width: 100px; 
+    height: 100px; 
+    border-radius: 50%;
 }
+
 .accesos-rapidos-inicio {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 1em;
     align-content: start;
 }
+
 .btn-inicio {
     background: white;
     padding: 1.5em;
@@ -130,16 +249,51 @@ body {
     box-shadow: 0 2px 8px rgba(0,0,0,0.1);
     transition: transform 0.2s, box-shadow 0.2s;
 }
+
 .btn-inicio:hover {
     transform: translateY(-5px);
     box-shadow: 0 4px 15px rgba(0,0,0,0.15);
 }
-.btn-misiones {
-    background: #fcd22b; /* Amarillo destacado */
-    grid-column: span 2; /* Ocupa todo el ancho */
-}
-/* --- ESTILOS ADICIONALES PARA LA TIENDA --- */
 
+.btn-misiones {
+    background: #fcd22b;
+    grid-column: span 2;
+}
+
+/* --- ESTILOS PÁGINA DE MISIONES --- */
+.mision-lista-vertical {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5em;
+}
+
+.mision-card {
+    background: #fff;
+    padding: 1.5em;
+    border-radius: 15px;
+    border: 1px solid #eee;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+}
+
+.desc-mision {
+    color: #555;
+    margin: 0.5em 0 1em 0;
+}
+
+.mision-progreso-info, .mision-recompensa, .mision-estado {
+    margin-top: 0.8em;
+}
+
+.estado-completado {
+    font-weight: bold;
+    color: #198754;
+}
+
+.estado-pendiente {
+    color: #6c757d;
+}
+
+/* --- ESTILOS DE LA TIENDA --- */
 .puntos-tienda {
     text-align: right;
     font-size: 1.2em;
@@ -151,7 +305,6 @@ body {
 
 .tienda-lista {
     display: grid;
-    /* Crea una cuadrícula responsive que se adapta al tamaño de la pantalla */
     grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
     gap: 1.5em;
 }
@@ -225,13 +378,11 @@ body {
     width: 100%;
 }
 
-/* --- ESTILOS CORREGIDOS PARA EL POP-UP DE COMPRA --- */
-
+/* --- POP-UP DE COMPRA --- */
 .popup-overlay {
     position: fixed;
     top: 0; left: 0;
     width: 100%; height: 100%;
-    /* Usamos el mismo efecto de fondo que en el resto de la app */
     background: rgba(255, 255, 255, 0.1);
     backdrop-filter: blur(5px);
     display: flex;
@@ -241,7 +392,6 @@ body {
 }
 
 .popup-box {
-    /* Aplicamos el estilo de recuadro */
     background: rgba(255, 255, 255, 0.9);
     border-radius: 20px;
     padding: 2em;
@@ -263,7 +413,7 @@ body {
 
 .popup-contenido {
     display: flex;
-    flex-direction: column; /* Cambiado para alinear verticalmente */
+    flex-direction: column;
     align-items: center;
     gap: 1em;
 }
@@ -287,8 +437,7 @@ body {
     gap: 1em;
 }
 
-/* --- ESTILOS DEL INVENTARIO --- */
-
+/* --- INVENTARIO --- */
 .inventario-lista {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
@@ -309,7 +458,7 @@ body {
 }
 
 .btn-equipar {
-    background: #0d6efd; /* Azul para la acción de equipar */
+    background: #0d6efd;
     color: white;
     border: none;
     padding: 10px;
@@ -327,16 +476,14 @@ body {
 }
 
 .mensaje-vacio {
-    grid-column: 1 / -1; /* Ocupa todo el ancho del grid */
+    grid-column: 1 / -1;
     text-align: center;
     padding: 2em;
     color: #666;
 }
 
-/* --- ESTILO PARA EL BOTÓN EQUIPADO --- */
-
 .equipado {
-    background: #198754; /* Verde de éxito */
+    background: #198754;
     color: white;
     padding: 10px;
     border-radius: 8px;
@@ -345,117 +492,7 @@ body {
     margin-top: 1em;
 }
 
-/* --- ESTRUCTURA DE 3 COLUMNAS --- */
-body.layout-ube {
-    display: grid;
-    grid-template-columns: 240px 1fr 280px;
-    height: 100vh;
-    transition: grid-template-columns 0.3s ease;
-}
-
-/* --- LÓGICA PARA OCULTAR LA BARRA DE MISIONES --- */
-body.misiones-ocultas .sidebar-misiones {
-    display: none;
-}
-body.misiones-ocultas {
-    grid-template-columns: 240px 1fr;
-}
-
-/* --- ESTILO PARA EL BOTÓN "VER TODAS" --- */
-.lista-misiones {
-    display: flex;
-    flex-direction: column;
-    height: 100%;
-}
-.btn-ver-todas {
-    margin-top: auto; /* Empuja el botón al final */
-    padding: 10px;
-    background-color: #ddd;
-    border-radius: 8px;
-    text-align: center;
-    text-decoration: none;
-    font-weight: bold;
-    color: #333;
-}
-.btn-ver-todas:hover {
-    background-color: #ccc;
-}
-/* --- ESTILOS PÁGINA DE MISIONES --- */
-.mision-lista-vertical {
-    display: flex;
-    flex-direction: column; /* Apila los elementos verticalmente */
-    gap: 1.5em; /* Espacio entre las tarjetas */
-}
-.mision-card {
-    background: #fff;
-    padding: 1.5em;
-    border-radius: 15px;
-    border: 1px solid #eee;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.07);
-}
-.nombre-mision {
-    font-size: 1.2em;
-    font-weight: bold;
-    color: #a10020;
-}
-.desc-mision {
-    color: #555;
-    margin: 0.5em 0 1em 0;
-}
-.mision-progreso-info, .mision-recompensa, .mision-estado {
-    margin-top: 0.8em;
-}
-.estado-completado {
-    font-weight: bold;
-    color: #198754;
-}
-.estado-pendiente {
-    color: #6c757d;
-}
-/* Estilo para la burbuja de conteo de misiones */
-.sidebar-misiones h3 {
-    display: flex;
-    align-items: center;
-}
-.mision-conteo {
-    display: inline-block;
-    background-color: #c6002a; /* Color principal */
-    color: white;
-    font-size: 0.75em; /* Más pequeño que el título */
-    font-weight: bold;
-    padding: 3px 9px;
-    border-radius: 50%; /* Forma circular */
-    margin-left: 10px;
-}
-/* --- ESTILOS PARA EL BOTÓN DE MOSTRAR MISIONES --- */
-
-.btn-mostrar-misiones {
-    /* Por defecto, el botón está oculto */
-    display: none; 
-
-    /* Posición fija en la esquina superior derecha */
-    position: fixed;
-    top: 20px;
-    right: 20px;
-    z-index: 100;
-
-    /* Estilos visuales */
-    background-color: #a10020;
-    color: white;
-    border: none;
-    border-radius: 10px;
-    padding: 10px 15px;
-    font-weight: bold;
-    cursor: pointer;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.2);
-}
-
-/* Cuando la barra de misiones está oculta, ESTE botón se muestra */
-body.misiones-ocultas .btn-mostrar-misiones {
-    display: block;
-}
-
-/* --- ESTILOS PÁGINA DE JUEGOS --- */
+/* --- PÁGINA DE JUEGOS --- */
 .juegos-titulo-box {
     text-align: center;
     margin: 20px 0 40px 0;
@@ -468,7 +505,6 @@ body.misiones-ocultas .btn-mostrar-misiones {
 
 .juegos-grid {
     display: grid;
-    /* Esto crea las columnas lado a lado y se ajusta automáticamente */
     grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
     gap: 2em;
 }
@@ -509,14 +545,12 @@ body.misiones-ocultas .btn-mostrar-misiones {
     font-weight: bold;
 }
 
-/* --- ESTILOS DEL JUEGO DE MEMORIA (memoria.html) --- */
-
+/* --- JUEGO DE MEMORIA --- */
 .memoria-box {
-    max-width: 800px; /* Ancho máximo para el contenedor del juego */
-    margin: 3em auto; /* Centrar en la página y darle margen superior */
-    padding: 2.5em 2.5em; /* Padding dentro de la caja */
-    /* Las propiedades de fondo, blur, shadow, border ya vienen de .fondo-blur */
-    text-align: center; /* Centrar el texto dentro del panel */
+    max-width: 800px;
+    margin: 3em auto;
+    padding: 2.5em 2.5em;
+    text-align: center;
 }
 
 .juego-info-panel {
@@ -528,14 +562,15 @@ body.misiones-ocultas .btn-mostrar-misiones {
     color: #72002b;
     box-shadow: 0 2px 10px #c6002a11;
     display: flex;
-    flex-wrap: wrap; /* Permite que los elementos se envuelvan en líneas si no hay espacio */
-    justify-content: space-around; /* Distribuye el espacio entre los elementos */
-    gap: 10px; /* Espacio entre los elementos internos */
+    flex-wrap: wrap;
+    justify-content: space-around;
+    gap: 10px;
 }
+
 .juego-info-panel div {
     display: flex;
     align-items: center;
-    gap: 5px; /* Espacio entre el label y el span */
+    gap: 5px;
 }
 
 .juego-info-panel select {
@@ -547,67 +582,54 @@ body.misiones-ocultas .btn-mostrar-misiones {
 
 .penalizacion {
     color: #c6002a;
-    margin-left:1.5em;
-    font-weight:bold;
+    margin-left: 1.5em;
+    font-weight: bold;
 }
 
-/* Contenedor del tablero del juego de memoria (donde van las celdas) */
 .memoria-game {
     display: grid;
-    /* grid-template-columns se setea desde JS. Es CRÍTICO que el valor en JS
-       coincida con el 'width' de .memoria-cell + 'gap' total por celda.
-       Si en JS tienes `repeat(${cols}, 60px)`, las celdas deben ser de 60px.
-       Si en JS tienes `repeat(${cols}, 80px)`, las celdas deben ser de 80px.
-       En base a tu imagen, las celdas de 60px o 70px podrían ser ideales.
-       Vamos a establecerlo en 70px para las celdas. */
-    gap: 8px; /* Espacio moderado entre las cartas */
-    justify-content: center; /* Centra el grid horizontalmente */
-    align-items: center; /* Centra el grid verticalmente si hay espacio */
-    padding: 15px; /* Ajusta el padding para que el tablero no se vea pegado a los bordes */
-    background-color: #eee; /* Fondo sutil para el área de juego */
+    gap: 8px;
+    justify-content: center;
+    align-items: center;
+    padding: 15px;
+    background-color: #eee;
     border-radius: 10px;
     margin: 20px auto;
-    box-shadow: inset 0 0 10px rgba(0,0,0,0.1); /* Sombra interna para efecto de profundidad */
-    max-width: fit-content; /* Asegura que el contenedor del grid se ajuste a su contenido */
+    box-shadow: inset 0 0 10px rgba(0,0,0,0.1);
+    max-width: fit-content;
 }
 
-/* Cada celda individual del juego de memoria (la carta) */
 .memoria-cell {
-    /* Aquí definimos el tamaño de la carta. Probemos con 70px para que quepa mejor. */
-    width: 50px; /* Tamaño de la carta ajustado */
-    height: 50px; /* Mantener la proporción cuadrada */
-    background-color: #a10020; /* Color de la parte trasera de la carta (rojo UBE) */
-    border: 2px solid #800018; /* Borde más oscuro */
-    border-radius: 10px; /* Ajustar el radio para que se vea bien con el nuevo tamaño */
+    width: 50px;
+    height: 50px;
+    background-color: #a10020;
+    border: 2px solid #800018;
+    border-radius: 10px;
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 2em; /* Tamaño del ícono ajustado para la nueva carta */
-    color: transparent; /* Oculta el ícono por defecto */
-    transition: background-color 0.3s ease, color 0.3s ease, transform 0.2s; /* Transiciones para suavidad */
-    transform-style: preserve-3d; /* Necesario para efectos de volteo 3D */
-    user-select: none; /* Evita la selección de texto */
-    position: relative; /* Para posibles contenidos front/back */
+    font-size: 2em;
+    color: transparent;
+    transition: background-color 0.3s ease, color 0.3s ease, transform 0.2s;
+    transform-style: preserve-3d;
+    user-select: none;
+    position: relative;
 }
 
-/* Estilo para las cartas volteadas */
 .memoria-cell.flipped {
-    background-color: #fff; /* Fondo blanco al voltear */
-    color: #333; /* Color del ícono al voltear */
-    /* Si estás usando `transform: rotateY(180deg);` en tu JS para el volteo, asegúrate de que el CSS también lo tenga: */
+    background-color: #fff;
+    color: #333;
     transform: rotateY(180deg);
 }
 
-/* Estilo para las cartas que ya han sido emparejadas */
 .memoria-cell.matched {
-    background-color: #4CAF50; /* Color verde para las cartas encontradas */
-    color: #fff; /* Color del ícono en cartas encontradas */
-    border-color: #45a049; /* Borde del mismo tono */
-    cursor: default; /* Ya no son clicables */
+    background-color: #4CAF50;
+    color: #fff;
+    border-color: #45a049;
+    cursor: default;
 }
 
-/* Botones dentro del juego de memoria */
 .memoria-botones {
     margin-top: 20px;
     display: flex;
@@ -620,7 +642,7 @@ body.misiones-ocultas .btn-mostrar-misiones {
     font-size: 1.1em;
     border-radius: 10px;
     text-decoration: none;
-    background-color: #c6002a; /* Rojo UBE */
+    background-color: #c6002a;
     color: white;
     border: none;
     cursor: pointer;
@@ -629,21 +651,22 @@ body.misiones-ocultas .btn-mostrar-misiones {
 }
 
 .memoria-botones .btn:hover {
-    background-color: #a10020; /* Rojo UBE más oscuro */
+    background-color: #a10020;
 }
 
-/* Estilos para el pequeño logro junto al avatar en el panel principal */
 .logro-pequeno-avatar {
     position: absolute;
-    bottom: 0px; /* Ajusta la posición vertical */
-    right: 0px; /* Ajusta la posición horizontal */
-    width: 35px; /* Tamaño pequeño para el logro */
-    height: 35px; /* Mantener proporción */
-    border-radius: 50%; /* Hacerlo circular */
-    border: 2px solid #fcd22b; /* Borde amarillo para destacarlo */
+    bottom: 0px;
+    right: 0px;
+    width: 35px;
+    height: 35px;
+    border-radius: 50%;
+    border: 2px solid #fcd22b;
     background-color: #fff;
     padding: 3px;
     object-fit: contain;
-    z-index: 3; /* Asegura que esté por encima del avatar y el marco */
-    box-shadow: 0 2px 8px rgba(0,0,0,0.2); /* Sombra sutil */
+    z-index: 3;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
 }
+
+```
