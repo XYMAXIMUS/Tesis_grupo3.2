@@ -18,7 +18,7 @@ def login_required(f):
 
 # --- CONFIGURACIÓN DE LA APLICACIÓN FLASK ---
 app = Flask(__name__)
-app.secret_key = os.environ.get("FLASK_SECRET_KEY", "una_clave_secreta_super_segura_y_aleatoria_para_produccion_12345") 
+app.secret_key = os.environ.get("FLASK_SECRET_KEY", "clave_secreta_produccion_ube_2026") 
 
 # --- CONFIGURACIÓN DE LA BASE DE DATOS ---
 db_url = os.environ.get('DATABASE_URL', 'postgresql://postgres:12345678@localhost:5432/db_tesis')
@@ -66,8 +66,8 @@ class Estudiante(db.Model):
     xp = db.Column(db.Integer, default=0, nullable=False)
     nivel = db.Column(db.Integer, default=1, nullable=False)
     avatar_personal = db.Column(db.String(255), default='avatar-1.png')
-    marco_personal = db.Column(db.String(255), default='marco_amarillo.png')
-    fondo_personal = db.Column(db.String(255))
+    marco_personal = db.Column(db.String(255), default=None, nullable=True) # MODIFICADO: No asigna marco al inicio
+    fondo_personal = db.Column(db.String(255), default=None, nullable=True)
     
     inventario = db.relationship('Inventario', backref='estudiante', lazy=True, cascade="all, delete-orphan")
     progreso_misiones = db.relationship('ProgresoMision', backref='estudiante', lazy=True, cascade="all, delete-orphan")
@@ -134,71 +134,59 @@ class EstudianteActividadCompletada(db.Model):
 
     actividad = db.relationship('Actividad', backref='completada_por_estudiantes')
 
-# --- CREACIÓN DE TABLAS Y REFREZCO DE DATOS EN PRODUCCIÓN ---
+# --- INICIALIZACIÓN SEGURA DE LA BASE DE DATOS (MODIFICADA) ---
 with app.app_context():
     db.create_all()
 
-    # Limpieza previa de relaciones para evitar conflictos de claves foráneas
-    ProgresoMision.query.delete()
-    Inventario.query.delete()
-    db.session.execute(estudiante_logros.delete())
+    # Cargar datos iniciales SOLO si la base de datos está vacía
+    if Objeto.query.count() == 0:
+        print("Cargando catálogos iniciales en la base de datos...")
+        misiones_iniciales = [
+            Mision(nombre="Primer Paso Gamer", descripcion="Juega una partida de memoria.", tipo="jugar_memoria_1", action_trigger="jugar_memoria", meta=1, recompensa_puntos=10, recompensa_xp=5),
+            Mision(nombre="Veterano de Memoria", descripcion="Juega 5 partidas de memoria.", tipo="jugar_memoria_5", action_trigger="jugar_memoria", meta=5, recompensa_puntos=50, recompensa_xp=30),
+            Mision(nombre="Victoria Memoriosa", descripcion="Gana una partida de memoria.", tipo="ganar_memoria_1", action_trigger="ganar_memoria", meta=1, recompensa_puntos=30, recompensa_xp=15),
+            Mision(nombre="Tic-Tac-Experto", descripcion="Juega una partida de Tic-Tac-Toe.", tipo="jugar_tictactoe_1", action_trigger="jugar_tictactoe", meta=1, recompensa_puntos=10, recompensa_xp=5),
+            Mision(nombre="Dominador del Tres en Raya", descripcion="Gana una partida de Tic-Tac-Toe.", tipo="ganar_tictactoe_1", action_trigger="ganar_tictactoe", meta=1, recompensa_puntos=25, recompensa_xp=12),
+            Mision(nombre="Maestro del Tres en Raya", descripcion="Gana 3 partidas de Tic-Tac-Toe.", tipo="ganar_tictactoe_3", action_trigger="ganar_tictactoe", meta=3, recompensa_puntos=75, recompensa_xp=40),
+            Mision(nombre="El Coleccionista", descripcion="Compra un marco en la tienda.", tipo="comprar_marco_1", action_trigger="comprar_marco", meta=1, recompensa_puntos=20, recompensa_xp=10),
+            Mision(nombre="Gastador Inteligente", descripcion="Gasta un total de 100 puntos en la tienda.", tipo="gastar_puntos_100", action_trigger="gastar_puntos", meta=100, recompensa_puntos=50, recompensa_xp=25),
+            Mision(nombre="Nueva Apariencia", descripcion="Cambia tu avatar en ajustes.", tipo="cambiar_avatar_1", action_trigger="cambiar_avatar", meta=1, recompensa_puntos=15, recompensa_xp=8),
+        ]
+        db.session.add_all(misiones_iniciales)
 
-    # Limpieza de catálogos principales
-    Objeto.query.delete()
-    Mision.query.delete()
-    Logro.query.delete()
-    Actividad.query.delete()
-    db.session.commit()
+        objetos_iniciales = [
+            Objeto(nombre="Avatar Gamer 2", tipo="avatar", descripcion="Un avatar moderno para tu perfil.", imagen_url="avatares/avatar-2.png", precio=50),
+            Objeto(nombre="Avatar Gamer 3", tipo="avatar", descripcion="Muestra tu estilo competitivo.", imagen_url="avatares/avatar-3.png", precio=75),
+            Objeto(nombre="Marco Amarillo", tipo="marco", descripcion="Marco brillante color amarillo.", imagen_url="marcos/marco_amarillo.png", precio=50),
+            Objeto(nombre="Marco Azul", tipo="marco", descripcion="Marco brillante de tono azul.", imagen_url="marcos/marco_azul.png", precio=100),
+            Objeto(nombre="Marco Celeste", tipo="marco", descripcion="Marco fresco color celeste.", imagen_url="marcos/marco_celeste.png", precio=80),
+            Objeto(nombre="Marco Morado", tipo="marco", descripcion="Marco elegante de color morado.", imagen_url="marcos/marco_morado.png", precio=120),
+            Objeto(nombre="Marco Rojo", tipo="marco", descripcion="Marco intenso de color rojo.", imagen_url="marcos/marco_rojo.png", precio=100),
+            Objeto(nombre="Marco Verde", tipo="marco", descripcion="Marco natural color verde.", imagen_url="marcos/marco_verde.png", precio=90),
+            Objeto(nombre="Fondo Bosque", tipo="fondo", descripcion="Un sereno fondo natural.", imagen_url="fondos/bosque.png", precio=150),
+            Objeto(nombre="Fondo Cielo", tipo="fondo", descripcion="Un hermoso fondo del cielo.", imagen_url="fondos/cielo.png", precio=150),
+            Objeto(nombre="Fondo Ciudad", tipo="fondo", descripcion="Fondo urbano nocturno.", imagen_url="fondos/city.jpg", precio=180)
+        ]
+        db.session.add_all(objetos_iniciales)
 
-    print("Cargando nuevos datos con las rutas de imagen correspondientes...")
-    misiones_iniciales = [
-        Mision(nombre="Primer Paso Gamer", descripcion="Juega una partida de memoria.", tipo="jugar_memoria_1", action_trigger="jugar_memoria", meta=1, recompensa_puntos=10, recompensa_xp=5),
-        Mision(nombre="Veterano de Memoria", descripcion="Juega 5 partidas de memoria.", tipo="jugar_memoria_5", action_trigger="jugar_memoria", meta=5, recompensa_puntos=50, recompensa_xp=30),
-        Mision(nombre="Victoria Memoriosa", descripcion="Gana una partida de memoria.", tipo="ganar_memoria_1", action_trigger="ganar_memoria", meta=1, recompensa_puntos=30, recompensa_xp=15),
-        Mision(nombre="Tic-Tac-Experto", descripcion="Juega una partida de Tic-Tac-Toe.", tipo="jugar_tictactoe_1", action_trigger="jugar_tictactoe", meta=1, recompensa_puntos=10, recompensa_xp=5),
-        Mision(nombre="Dominador del Tres en Raya", descripcion="Gana una partida de Tic-Tac-Toe.", tipo="ganar_tictactoe_1", action_trigger="ganar_tictactoe", meta=1, recompensa_puntos=25, recompensa_xp=12),
-        Mision(nombre="Maestro del Tres en Raya", descripcion="Gana 3 partidas de Tic-Tac-Toe.", tipo="ganar_tictactoe_3", action_trigger="ganar_tictactoe", meta=3, recompensa_puntos=75, recompensa_xp=40),
-        Mision(nombre="El Coleccionista", descripcion="Compra un marco en la tienda.", tipo="comprar_marco_1", action_trigger="comprar_marco", meta=1, recompensa_puntos=20, recompensa_xp=10),
-        Mision(nombre="Gastador Inteligente", descripcion="Gasta un total de 100 puntos en la tienda.", tipo="gastar_puntos_100", action_trigger="gastar_puntos", meta=100, recompensa_puntos=50, recompensa_xp=25),
-        Mision(nombre="Nueva Apariencia", descripcion="Cambia tu avatar en ajustes.", tipo="cambiar_avatar_1", action_trigger="cambiar_avatar", meta=1, recompensa_puntos=15, recompensa_xp=8),
-    ]
-    db.session.add_all(misiones_iniciales)
+        logros_iniciales = [
+            Logro(nombre="Primer Paso", descripcion="Realiza tu primera compra en la tienda.", imagen_url="medallas/Medalla_Primer_Compra.png", nivel_requerido=1),
+            Logro(nombre="Explorador", descripcion="Juega diversas partidas en la plataforma.", imagen_url="medallas/Medalla_Explorador_de_Juegos.png", nivel_requerido=1),
+            Logro(nombre="Maestro de Memoria", descripcion="Demuestra tus habilidades de memoria.", imagen_url="medallas/Medalla_Maestro_de_Memoria.png", nivel_requerido=2),
+            Logro(nombre="Constancia Semanal", descripcion="Mantén tu actividad constante en la plataforma.", imagen_url="medallas/Medalla_Constancia_Semanal.png", nivel_requerido=3),
+        ]
+        db.session.add_all(logros_iniciales)
 
-    # Catálogo de Tienda basado en tus subcarpetas reales
-    objetos_iniciales = [
-        Objeto(nombre="Avatar Gamer 2", tipo="avatar", descripcion="Un avatar moderno para tu perfil.", imagen_url="avatares/avatar-2.png", precio=50),
-        Objeto(nombre="Avatar Gamer 3", tipo="avatar", descripcion="Muestra tu estilo competitivo.", imagen_url="avatares/avatar-3.png", precio=75),
-        Objeto(nombre="Marco Amarillo", tipo="marco", descripcion="Marco brillante color amarillo.", imagen_url="marcos/marco_amarillo.png", precio=50),
-        Objeto(nombre="Marco Azul", tipo="marco", descripcion="Marco brillante de tono azul.", imagen_url="marcos/marco_azul.png", precio=100),
-        Objeto(nombre="Marco Celeste", tipo="marco", descripcion="Marco fresco color celeste.", imagen_url="marcos/marco_celeste.png", precio=80),
-        Objeto(nombre="Marco Morado", tipo="marco", descripcion="Marco elegante de color morado.", imagen_url="marcos/marco_morado.png", precio=120),
-        Objeto(nombre="Marco Rojo", tipo="marco", descripcion="Marco intenso de color rojo.", imagen_url="marcos/marco_rojo.png", precio=100),
-        Objeto(nombre="Marco Verde", tipo="marco", descripcion="Marco natural color verde.", imagen_url="marcos/marco_verde.png", precio=90),
-        Objeto(nombre="Fondo Bosque", tipo="fondo", descripcion="Un sereno fondo natural.", imagen_url="fondos/bosque.png", precio=150),
-        Objeto(nombre="Fondo Cielo", tipo="fondo", descripcion="Un hermoso fondo del cielo.", imagen_url="fondos/cielo.png", precio=150),
-        Objeto(nombre="Fondo Ciudad", tipo="fondo", descripcion="Fondo urbano nocturno.", imagen_url="fondos/city.jpg", precio=180)
-    ]
-    db.session.add_all(objetos_iniciales)
+        actividades_iniciales = [
+            Actividad(nombre="Lectura de Artículo", descripcion="Lee un artículo científico sobre IA.", puntos_recompensa=10),
+            Actividad(nombre="Participación en Foro", descripcion="Publica una pregunta o respuesta en el foro del curso.", puntos_recompensa=10),
+            Actividad(nombre="Asistencia a Webinar", descripcion="Asiste a un webinar de la UBE.", puntos_recompensa=10),
+            Actividad(nombre="Entrega de Tarea Extra", descripcion="Entrega una tarea opcional para puntos extra.", puntos_recompensa=10),
+        ]
+        db.session.add_all(actividades_iniciales)
 
-    # Catálogo de Logros usando tus medallas reales
-    logros_iniciales = [
-        Logro(nombre="Primer Paso", descripcion="Realiza tu primera compra en la tienda.", imagen_url="medallas/Medalla_Primer_Compra.png", nivel_requerido=1),
-        Logro(nombre="Explorador", descripcion="Juega diversas partidas en la plataforma.", imagen_url="medallas/Medalla_Explorador_de_Juegos.png", nivel_requerido=1),
-        Logro(nombre="Maestro de Memoria", descripcion="Demuestra tus habilidades de memoria.", imagen_url="medallas/Medalla_Maestro_de_Memoria.png", nivel_requerido=2),
-        Logro(nombre="Constancia Semanal", descripcion="Mantén tu actividad constante en la plataforma.", imagen_url="medallas/Medalla_Constancia_Semanal.png", nivel_requerido=3),
-    ]
-    db.session.add_all(logros_iniciales)
-
-    actividades_iniciales = [
-        Actividad(nombre="Lectura de Artículo", descripcion="Lee un artículo científico sobre IA.", puntos_recompensa=10),
-        Actividad(nombre="Participación en Foro", descripcion="Publica una pregunta o respuesta en el foro del curso.", puntos_recompensa=10),
-        Actividad(nombre="Asistencia a Webinar", descripcion="Asiste a un webinar de la UBE.", puntos_recompensa=10),
-        Actividad(nombre="Entrega de Tarea Extra", descripcion="Entrega una tarea opcional para puntos extra.", puntos_recompensa=10),
-    ]
-    db.session.add_all(actividades_iniciales)
-
-    db.session.commit()
-    print("¡Base de datos restablecida y cargada exitosamente!")
+        db.session.commit()
+        print("¡Base de datos cargada correctamente!")
 
 # --- FUNCIONES AUXILIARES DE GAMIFICACIÓN ---
 
@@ -323,7 +311,7 @@ def tienda():
 @login_required
 def comprar(obj_id):
     estudiante = db.session.get(Estudiante, session['estudiante_id'])
-    objeto = Objeto.query.get(obj_id)
+    objeto = db.session.get(Objeto, obj_id)
 
     if not objeto:
         flash("El objeto no existe.", "danger")
@@ -550,7 +538,7 @@ def resetear_progreso():
     estudiante.xp = 0
     estudiante.nivel = 1
     estudiante.avatar_personal = 'avatar-1.png'
-    estudiante.marco_personal = 'marco_amarillo.png'
+    estudiante.marco_personal = None
     estudiante.fondo_personal = None
     
     Inventario.query.filter_by(estudiante_id=estudiante.id).delete()
@@ -607,14 +595,12 @@ def tictactoe_volver_menu():
 @app.route("/juego/tictactoe/ganar", methods=["POST"])
 @login_required
 def tictactoe_ganar():
-    flash("Usa la ruta /juego/resultado para enviar los resultados del juego.", "warning")
-    return jsonify({"status": "deprecated", "message": "Por favor, usa /juego/resultado"})
+    return jsonify({"status": "deprecated", "message": "Por favor, usa /juego/resultado"}), 400
 
 @app.route("/juego/tictactoe/perder", methods=["POST"])
 @login_required
 def tictactoe_perder():
-    flash("Usa la ruta /juego/resultado para enviar los resultados del juego.", "warning")
-    return jsonify({"status": "deprecated", "message": "Por favor, usa /juego/resultado"})
+    return jsonify({"status": "deprecated", "message": "Por favor, usa /juego/resultado"}), 400
 
 @app.route("/juego/tictactoe")
 @login_required
@@ -765,6 +751,6 @@ def logout():
     flash('Has cerrado sesión correctamente.', 'info')
     return redirect(url_for('login'))
 
-# --- PUNTO DE INICIO DE LA APLICACIÓN (Solo para ejecución local) ---
+# --- PUNTO DE INICIO ---
 if __name__ == "__main__":
     app.run(debug=True)
