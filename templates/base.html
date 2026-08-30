@@ -11,8 +11,14 @@
     <nav class="menu-lateral">
         {% if session['estudiante_id'] %}
         <div class="perfil-menu">
-            <div class="avatar-container" style="background-image: url('{{ url_for('static', filename='img/marcos/' + marco) }}');">
+            <div class="avatar-container">
+                <!-- Foto de perfil centrada -->
                 <img src="{{ url_for('static', filename='img/avatares/' + avatar) }}" class="avatar-menu" alt="Avatar">
+                
+                <!-- Marco superpuesto por encima -->
+                {% if marco %}
+                    <img src="{{ url_for('static', filename='img/marcos/' + marco) }}" class="marco-menu" alt="Marco">
+                {% endif %}
             </div>
             <div class="nombre-usuario">{{ name }}</div>
         </div>
