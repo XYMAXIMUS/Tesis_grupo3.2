@@ -9,7 +9,7 @@ body {
 
 body.layout-ube {
     display: grid;
-    grid-template-columns: 240px 1fr 280px; /* Izquierda, Centro, Derecha */
+    grid-template-columns: 240px 1fr 280px;
     height: 100vh;
     transition: grid-template-columns 0.3s ease;
 }
@@ -41,7 +41,6 @@ body.layout-ube {
     border-bottom: 1px solid rgba(255, 255, 255, 0.2);
 }
 
-/* CONTENEDOR Y ALINEACIÓN DE MARCO/AVATAR EN BARRA LATERAL */
 .avatar-container {
     position: relative;
     width: 100px;
@@ -52,18 +51,16 @@ body.layout-ube {
     justify-content: center;
 }
 
-/* Avatar recortado y alineado al hueco circular del marco */
 .avatar-menu {
     width: 58%;
     height: 58%;
     border-radius: 50%;
     object-fit: cover;
     position: relative;
-    top: -5px; /* Desplaza el avatar hacia arriba para centrar en el marco */
+    top: -5px;
     z-index: 1;
 }
 
-/* Marco superpuesto en la capa superior */
 .marco-menu {
     position: absolute;
     top: 0;
@@ -167,14 +164,8 @@ body.layout-ube {
     background-color: #ccc;
 }
 
-/* --- LÓGICA PARA OCULTAR LA BARRA DE MISIONES --- */
-body.misiones-ocultas .sidebar-misiones { 
-    display: none; 
-}
-
-body.misiones-ocultas { 
-    grid-template-columns: 240px 1fr; 
-}
+body.misiones-ocultas .sidebar-misiones { display: none; }
+body.misiones-ocultas { grid-template-columns: 240px 1fr; }
 
 .btn-mostrar-misiones {
     display: none; 
@@ -192,14 +183,9 @@ body.misiones-ocultas {
     box-shadow: 0 2px 10px rgba(0,0,0,0.2);
 }
 
-body.misiones-ocultas .btn-mostrar-misiones {
-    display: block;
-}
+body.misiones-ocultas .btn-mostrar-misiones { display: block; }
 
-.sidebar-misiones h3 {
-    display: flex;
-    align-items: center;
-}
+.sidebar-misiones h3 { display: flex; align-items: center; }
 
 .mision-conteo {
     display: inline-block;
@@ -213,14 +199,8 @@ body.misiones-ocultas .btn-mostrar-misiones {
 }
 
 /* --- ESTILOS DEL PANEL PRINCIPAL (index.html) --- */
-.bienvenida-box {
-    margin-bottom: 1.5em;
-}
-
-.bienvenida-titulo {
-    font-size: 1.8em;
-    color: #333;
-}
+.bienvenida-box { margin-bottom: 1.5em; }
+.bienvenida-titulo { font-size: 1.8em; color: #333; }
 
 .panel-central-inicio {
     display: grid;
@@ -229,12 +209,8 @@ body.misiones-ocultas .btn-mostrar-misiones {
     align-items: start;
 }
 
-.usuario-box-inicio {
-    padding: 1em;
-    text-align: center;
-}
+.usuario-box-inicio { padding: 1em; text-align: center; }
 
-/* CONTENEDOR PRINCIPAL DEL AVATAR CON MARCO EN INDEX.HTML */
 .avatar-con-marco {
     position: relative;
     width: 140px;
@@ -245,24 +221,20 @@ body.misiones-ocultas .btn-mostrar-misiones {
     justify-content: center;
 }
 
-/* FOTO DE PERFIL CENTRADA EN EL PANEL CENTRAL */
 .avatar-inicio {
     width: 58%;
     height: 58%;
     border-radius: 50%;
     object-fit: cover;
     position: relative;
-    top: -7px; /* Eleva la foto para calzar en el centro exacto del marco */
+    top: -7px;
     z-index: 1;
 }
 
-/* MARCO SUPERPUESTO EN EL PANEL CENTRAL */
 .marco-inicio {
     position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
     object-fit: contain;
     z-index: 2;
     pointer-events: none;
@@ -333,391 +305,173 @@ body.misiones-ocultas .btn-mostrar-misiones {
     box-shadow: 0 4px 15px rgba(0,0,0,0.15);
 }
 
-/* --- ESTILOS DE MISIONES, TIENDA, INVENTARIO Y JUEGOS --- */
-.mision-lista-vertical {
-    display: flex;
-    flex-direction: column;
-    gap: 1.5em;
-}
-
-.mision-card {
-    background: #fff;
-    padding: 1.5em;
-    border-radius: 15px;
-    border: 1px solid #eee;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.07);
-}
-
-.desc-mision {
-    color: #555;
-    margin: 0.5em 0 1em 0;
-}
-
-.mision-progreso-info, .mision-recompensa, .mision-estado {
-    margin-top: 0.8em;
-}
-
-.estado-completado {
-    font-weight: bold;
-    color: #198754;
-}
-
-.estado-pendiente {
-    color: #6c757d;
-}
-
-.puntos-tienda {
-    text-align: right;
-    font-size: 1.2em;
-    font-weight: bold;
-    color: #a10020;
-    margin-bottom: 1.5em;
-    padding-right: 1em;
-}
-
-.tienda-lista {
+/* --- SECCIÓN MEJORADA DE LOGROS Y MEDALLAS --- */
+.logros-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
     gap: 1.5em;
+    margin-top: 1.5em;
 }
 
-.objeto-tienda {
-    background: #ffffff;
+.logro-card {
+    background: #fff;
     border-radius: 15px;
-    padding: 1em;
+    padding: 1.5em;
     text-align: center;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.08);
     border: 1px solid #eee;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
     display: flex;
     flex-direction: column;
     justify-content: space-between;
-    transition: transform 0.2s, box-shadow 0.2s;
+    transition: transform 0.2s;
 }
 
-.objeto-tienda:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 6px 20px rgba(0,0,0,0.12);
+.logro-card:hover { transform: translateY(-5px); }
+
+.logro-card.bloqueado {
+    background: #fdfdfd;
+    opacity: 0.75;
 }
 
-.objeto-imagen {
-    width: 120px;
-    height: 120px;
-    object-fit: cover;
-    border-radius: 10px;
+.logro-img {
+    width: 80px;
+    height: 80px;
+    object-fit: contain;
     margin: 0 auto 1em auto;
 }
 
-.objeto-info {
+.logro-card.bloqueado .logro-img {
+    filter: grayscale(100%);
+}
+
+.logro-titulo {
+    font-size: 1.1em;
+    font-weight: bold;
+    color: #333;
+    margin-bottom: 0.3em;
+}
+
+.logro-desc {
+    font-size: 0.9em;
+    color: #666;
+    margin-bottom: 1em;
+}
+
+.logro-barra-outer {
+    width: 100%;
+    height: 8px;
+    background: #e0e0e0;
+    border-radius: 4px;
+    overflow: hidden;
+    margin-top: 0.5em;
+}
+
+.logro-barra-inner {
+    height: 100%;
+    background: #c6002a;
+    border-radius: 4px;
+    transition: width 0.3s;
+}
+
+.logro-progreso-texto {
+    font-size: 0.8em;
+    color: #888;
+    margin-top: 0.4em;
+}
+
+/* --- VISTA DE RANKING RENOVAL (TARJETAS MODERNAS) --- */
+.ranking-container {
+    display: flex;
+    flex-direction: column;
+    gap: 1em;
+    margin-top: 1.5em;
+}
+
+.ranking-card {
+    background: white;
+    border-radius: 12px;
+    padding: 1em 1.5em;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    border: 1px solid #eee;
+    transition: transform 0.2s;
+}
+
+.ranking-card:hover { transform: translateX(5px); }
+
+.ranking-card.destacado-propio {
+    background: #fff8f9;
+    border: 2px solid #a10020;
+}
+
+.ranking-posicion {
+    font-size: 1.5em;
+    font-weight: bold;
+    width: 50px;
+    color: #a10020;
+}
+
+.ranking-usuario-info {
+    display: flex;
+    align-items: center;
+    gap: 15px;
     flex-grow: 1;
 }
 
-.objeto-nombre {
+.ranking-detalles {
+    display: flex;
+    flex-direction: column;
+}
+
+.ranking-nombre {
     font-weight: bold;
     font-size: 1.1em;
-    margin: 0.5em 0;
-}
-
-.precio {
-    color: #a10020;
-    margin-bottom: 1em;
-    font-size: 1.05em;
-}
-
-.btn-comprar {
-    background: #c6002a;
-    color: white;
-    border: none;
-    padding: 10px;
-    border-radius: 8px;
-    cursor: pointer;
-    font-weight: bold;
+    color: #333;
     text-decoration: none;
-    display: block;
-    width: 100%;
 }
 
-.btn-comprar:hover {
-    background: #a10020;
-    color: white;
-}
+.ranking-nombre:hover { color: #c6002a; }
 
-.comprado {
-    background: #e9ecef;
-    color: #6c757d;
-    padding: 10px;
-    border-radius: 8px;
-    font-weight: bold;
-    width: 100%;
-}
-
-.popup-overlay {
-    position: fixed;
-    top: 0; left: 0;
-    width: 100%; height: 100%;
-    background: rgba(255, 255, 255, 0.1);
-    backdrop-filter: blur(5px);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 1000;
-}
-
-.popup-box {
-    background: rgba(255, 255, 255, 0.9);
-    border-radius: 20px;
-    padding: 2em;
-    box-shadow: 0 5px 25px rgba(0,0,0,0.2);
-    position: relative;
-    width: 90%;
-    max-width: 420px;
-    border: 1px solid rgba(255, 255, 255, 0.3);
-    text-align: center;
-}
-
-.popup-cerrar {
-    position: absolute;
-    top: 10px; right: 20px;
-    font-size: 2em;
-    cursor: pointer;
-    color: #aaa;
-}
-
-.popup-contenido {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 1em;
-}
-
-.popup-contenido img {
-    width: 100px; height: 100px;
-    border-radius: 10px;
-    border: 1px solid #ddd;
-}
-
-#popupCompraNombre {
-    font-weight: bold;
-    font-size: 1.2em;
-    color: #a10020;
-}
-
-.popup-botones {
-    margin-top: 1.5em;
-    display: flex;
-    justify-content: center;
-    gap: 1em;
-}
-
-.inventario-lista {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-    gap: 1.5em;
-    margin-top: 1.5em;
-}
-
-.objeto-inventario {
-    background: #fff;
-    border-radius: 15px;
-    padding: 1em;
-    text-align: center;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.08);
-    border: 1px solid #eee;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-}
-
-.btn-equipar {
-    background: #0d6efd;
-    color: white;
-    border: none;
-    padding: 10px;
-    border-radius: 8px;
-    cursor: pointer;
-    font-weight: bold;
-    text-decoration: none;
-    display: block;
-    margin-top: 1em;
-    transition: background-color 0.2s;
-}
-
-.btn-equipar:hover {
-    background: #0b5ed7;
-}
-
-.mensaje-vacio {
-    grid-column: 1 / -1;
-    text-align: center;
-    padding: 2em;
+.ranking-stats {
+    font-size: 0.9em;
     color: #666;
 }
 
-.equipado {
-    background: #198754;
+.btn-ver-perfil {
+    background: #a10020;
     color: white;
-    padding: 10px;
+    padding: 8px 15px;
     border-radius: 8px;
-    font-weight: bold;
-    text-align: center;
-    margin-top: 1em;
-}
-
-.juegos-titulo-box {
-    text-align: center;
-    margin: 20px 0 40px 0;
-}
-
-.juegos-titulo {
-    font-size: 2.2em;
-    color: #333;
-}
-
-.juegos-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-    gap: 2em;
-}
-
-.juego-card {
-    background: white;
-    border-radius: 15px;
-    padding: 1.5em;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-    text-align: center;
-    transition: transform 0.2s;
-    border: 1px solid #eee;
-}
-
-.juego-card:hover {
-    transform: translateY(-5px);
-}
-
-.juego-emoji {
-    font-size: 3em;
-    margin-bottom: 15px;
-}
-
-.juego-nombre {
-    font-size: 1.2em;
-    font-weight: bold;
-    color: #a10020;
-    margin-bottom: 20px;
-}
-
-.btn-jugar-juego {
-    display: inline-block;
-    padding: 10px 25px;
-    background-color: #c6002a;
-    color: white;
     text-decoration: none;
-    border-radius: 8px;
     font-weight: bold;
+    font-size: 0.9em;
 }
 
-.memoria-box {
-    max-width: 800px;
-    margin: 3em auto;
-    padding: 2.5em 2.5em;
-    text-align: center;
-}
+.btn-ver-perfil:hover { background: #c6002a; }
 
-.juego-info-panel {
-    background: #f6e9f6;
-    padding: 1em 1.6em;
-    border-radius: 14px;
-    margin-bottom: 1.5em;
-    font-size: 1.08em;
-    color: #72002b;
-    box-shadow: 0 2px 10px #c6002a11;
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: space-around;
-    gap: 10px;
-}
-
-.juego-info-panel div {
-    display: flex;
-    align-items: center;
-    gap: 5px;
-}
-
-.juego-info-panel select {
-    margin-left: 1em;
-    border-radius: 7px;
-    padding: 5px 8px;
-    border: 1px solid #c6002a77;
-}
-
-.penalizacion {
-    color: #c6002a;
-    margin-left: 1.5em;
-    font-weight: bold;
-}
-
-.memoria-game {
-    display: grid;
-    gap: 8px;
-    justify-content: center;
-    align-items: center;
-    padding: 15px;
-    background-color: #eee;
-    border-radius: 10px;
-    margin: 20px auto;
-    box-shadow: inset 0 0 10px rgba(0,0,0,0.1);
-    max-width: fit-content;
-}
-
-.memoria-cell {
-    width: 50px;
-    height: 50px;
-    background-color: #a10020;
-    border: 2px solid #800018;
-    border-radius: 10px;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 2em;
-    color: transparent;
-    transition: background-color 0.3s ease, color 0.3s ease, transform 0.2s;
-    transform-style: preserve-3d;
-    user-select: none;
-    position: relative;
-}
-
-.memoria-cell.flipped {
-    background-color: #fff;
-    color: #333;
-    transform: rotateY(180deg);
-}
-
-.memoria-cell.matched {
-    background-color: #4CAF50;
-    color: #fff;
-    border-color: #45a049;
-    cursor: default;
-}
-
-.memoria-botones {
-    margin-top: 20px;
-    display: flex;
-    justify-content: center;
-    gap: 15px;
-}
-
-.memoria-botones .btn {
-    padding: 12px 25px;
-    font-size: 1.1em;
-    border-radius: 10px;
-    text-decoration: none;
-    background-color: #c6002a;
-    color: white;
-    border: none;
-    cursor: pointer;
-    font-weight: bold;
-    transition: background-color 0.3s ease;
-}
-
-.memoria-botones .btn:hover {
-    background-color: #a10020;
-}
+/* --- ESTILOS COMPLEMENTARIOS --- */
+.mision-lista-vertical { display: flex; flex-direction: column; gap: 1.5em; }
+.mision-card { background: #fff; padding: 1.5em; border-radius: 15px; border: 1px solid #eee; box-shadow: 0 2px 8px rgba(0,0,0,0.07); }
+.desc-mision { color: #555; margin: 0.5em 0 1em 0; }
+.mision-progreso-info, .mision-recompensa, .mision-estado { margin-top: 0.8em; }
+.estado-completado { font-weight: bold; color: #198754; }
+.estado-pendiente { color: #6c757d; }
+.puntos-tienda { text-align: right; font-size: 1.2em; font-weight: bold; color: #a10020; margin-bottom: 1.5em; padding-right: 1em; }
+.tienda-lista { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 1.5em; }
+.objeto-tienda { background: #ffffff; border-radius: 15px; padding: 1em; text-align: center; box-shadow: 0 4px 15px rgba(0,0,0,0.08); border: 1px solid #eee; display: flex; flex-direction: column; justify-content: space-between; transition: transform 0.2s, box-shadow 0.2s; }
+.objeto-tienda:hover { transform: translateY(-5px); box-shadow: 0 6px 20px rgba(0,0,0,0.12); }
+.objeto-imagen { width: 120px; height: 120px; object-fit: cover; border-radius: 10px; margin: 0 auto 1em auto; }
+.objeto-info { flex-grow: 1; }
+.objeto-nombre { font-weight: bold; font-size: 1.1em; margin: 0.5em 0; }
+.precio { color: #a10020; margin-bottom: 1em; font-size: 1.05em; }
+.btn-comprar { background: #c6002a; color: white; border: none; padding: 10px; border-radius: 8px; cursor: pointer; font-weight: bold; text-decoration: none; display: block; width: 100%; }
+.btn-comprar:hover { background: #a10020; color: white; }
+.comprado { background: #e9ecef; color: #6c757d; padding: 10px; border-radius: 8px; font-weight: bold; width: 100%; }
+.inventario-lista { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 1.5em; margin-top: 1.5em; }
+.objeto-inventario { background: #fff; border-radius: 15px; padding: 1em; text-align: center; box-shadow: 0 2px 10px rgba(0,0,0,0.08); border: 1px solid #eee; display: flex; flex-direction: column; justify-content: space-between; }
+.btn-equipar { background: #0d6efd; color: white; border: none; padding: 10px; border-radius: 8px; cursor: pointer; font-weight: bold; text-decoration: none; display: block; margin-top: 1em; transition: background-color 0.2s; }
+.btn-equipar:hover { background: #0b5ed7; }
+.mensaje-vacio { grid-column: 1 / -1; text-align: center; padding: 2em; color: #666; }
+.equipado { background: #198754; color: white; padding: 10px; border-radius: 8px; font-weight: bold; text-align: center; margin-top: 1em; }
