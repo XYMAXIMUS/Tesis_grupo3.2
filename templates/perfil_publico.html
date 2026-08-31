@@ -1,0 +1,41 @@
+{% extends 'base.html' %}
+{% block title %}Perfil de {{ estudiante_visitado.nombre }}{% endblock %}
+{% block contenido %}
+
+<div class="fondo-blur" style="text-align: center; max-width: 650px; margin: 0 auto;">
+    <div class="avatar-con-marco" style="width: 150px; height: 150px;">
+        <img src="{{ url_for('static', filename='img/avatares/' + estudiante_visitado.avatar_personal) }}" class="avatar-inicio" alt="Avatar">
+        
+        {% if estudiante_visitado.marco_personal %}
+            <img src="{{ url_for('static', filename='img/marcos/' + estudiante_visitado.marco_personal) }}" class="marco-inicio" alt="Marco">
+        {% endif %}
+
+        {% if estudiante_visitado.logro_equipado %}
+            <img src="{{ url_for('static', filename='img/' + estudiante_visitado.logro_equipado.imagen_url) }}" class="logro-pequeno-avatar" title="Insignia: {{ estudiante_visitado.logro_equipado.nombre }}">
+        {% endif %}
+    </div>
+
+    <h2 style="margin-top: 0.5em; color: #a10020;">{{ estudiante_visitado.nombre }}</h2>
+    <p style="color:#555; font-size: 1.1em;">
+        Nivel: <b>{{ estudiante_visitado.nivel }}</b> | Puntos: <b>{{ estudiante_visitado.puntos }}</b> | XP: <b>{{ estudiante_visitado.xp }}</b>
+    </p>
+
+    <hr style="border: 0; border-top: 1px solid #ddd; margin: 1.5em 0;">
+
+    <h3>🏆 Vitrina de Logros Desbloqueados</h3>
+    <div class="logros-grid" style="grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 1em;">
+        {% for logro in estudiante_visitado.logros.all() %}
+            <div class="logro-card" style="padding: 0.8em;">
+                <img src="{{ url_for('static', filename='img/' + logro.imagen_url) }}" class="logro-img" style="width: 50px; height: 50px;">
+                <div class="logro-titulo" style="font-size:0.85em;">{{ logro.nombre }}</div>
+            </div>
+        {% else %}
+            <p class="mensaje-vacio">Este estudiante aún no ha desbloqueado logros.</p>
+        {% endfor %}
+    </div>
+
+    <div style="margin-top: 2em;">
+        <a href="{{ url_for('ranking') }}" class="btn-inicio" style="display:inline-block;">⬅ Volver al Ranking</a>
+    </div>
+</div>
+{% endblock %}
