@@ -1,25 +1,46 @@
 {% extends 'base.html' %}
 {% block title %}Ranking - Gamificación UBE{% endblock %}
 {% block contenido %}
+
+<div class="bienvenida-box">
+    <h1>📈 Tabla de Clasificación</h1>
+    <p>Compite con tus compañeros demostrando tu nivel y medallas destacadas.</p>
+</div>
+
 <div class="fondo-blur">
-  <h2>Ranking de estudiantes</h2>
-  <table class="tabla-ranking">
-    <thead>
-      <tr>
-        <th>Puesto</th>
-        <th>Nombre</th>
-        <th>Puntos</th>
-      </tr>
-    </thead>
-    <tbody>
-      {% for user in ranking %}
-      <tr {% if user.nombre == name %} style="background:#ffebef;font-weight:bold;"{% endif %}>
-        <td>{{ loop.index }}</td>
-        <td>{{ user.nombre }}</td>
-        <td>{{ user.puntos }}</td>
-      </tr>
-      {% endfor %}
-    </tbody>
-  </table>
+    <div class="ranking-container">
+        {% for usuario in ranking %}
+            <div class="ranking-card {% if usuario.id == estudiante.id %}destacado-propio{% endif %}">
+                <div class="ranking-posicion">
+                    {% if loop.index == 1 %}🥇
+                    {% elif loop.index == 2 %}🥈
+                    {% elif loop.index == 3 %}🥉
+                    {% else %}#{{ loop.index }}
+                    {% endif %}
+                </div>
+                
+                <div class="ranking-usuario-info">
+                    <div class="avatar-con-marco" style="width: 70px; height: 70px; margin: 0;">
+                        <img src="{{ url_for('static', filename='img/avatares/' + usuario.avatar_personal) }}" class="avatar-inicio" alt="Avatar">
+                        {% if usuario.marco_personal %}
+                            <img src="{{ url_for('static', filename='img/marcos/' + usuario.marco_personal) }}" class="marco-inicio" alt="Marco">
+                        {% endif %}
+                        {% if usuario.logro_equipado %}
+                            <img src="{{ url_for('static', filename='img/' + usuario.logro_equipado.imagen_url) }}" class="logro-pequeno-avatar" title="Insignia: {{ usuario.logro_equipado.nombre }}">
+                        {% endif %}
+                    </div>
+
+                    <div class="ranking-detalles">
+                        <a href="{{ url_for('ver_perfil', estudiante_id=usuario.id) }}" class="ranking-nombre">
+                            {{ usuario.nombre }}
+                        </a>
+                        <span class="ranking-stats"><b>Nivel {{ usuario.nivel }}</b> | {{ usuario.puntos }} Puntos | {{ usuario.xp }} XP</span>
+                    </div>
+                </div>
+
+                <a href="{{ url_for('ver_perfil', estudiante_id=usuario.id) }}" class="btn-ver-perfil">Ver Perfil 🔍</a>
+            </div>
+        {% endfor %}
+    </div>
 </div>
 {% endblock %}
