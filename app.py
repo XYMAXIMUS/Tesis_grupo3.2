@@ -1,6 +1,7 @@
 from flask import Flask, render_template, session, request, redirect, url_for, flash, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.exc import IntegrityError
+from sqlalchemy import text
 import os
 from werkzeug.utils import secure_filename
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -69,7 +70,7 @@ class Estudiante(db.Model):
     marco_personal = db.Column(db.String(255), default=None, nullable=True)
     fondo_personal = db.Column(db.String(255), default=None, nullable=True)
     
-    # Logro actualmente destacado/equipado en el avatar
+    # Logro actualmente destacado/equipado
     logro_equipado_id = db.Column(db.Integer, db.ForeignKey('logros.id'), nullable=True)
     logro_equipado = db.relationship('Logro', foreign_keys=[logro_equipado_id])
 
@@ -138,10 +139,19 @@ class EstudianteActividadCompletada(db.Model):
 
     actividad = db.relationship('Actividad', backref='completada_por_estudiantes')
 
-# --- INICIALIZACIÓN SEGURA DE LA BASE DE DATOS ---
+# --- INICIALIZACIÓN Y MIGRACIÓN SEGURA ---
 with app.app_context():
     db.create_all()
 
+    # MIGRACIÓN AUTOMÁTICA: Añade la nueva columna si no existe en PostgreSQL para evitar error 500
+    try:
+        db.session.execute(text("ALTER TABLE estudiantes ADD COLUMN IF NOT EXISTS logro_equipado_id INTEGER REFERENCES logros(id);"))
+        db.session.commit()
+    except Exception as e:
+        db.session.rollback()
+        print(f"Información de migración: {e}")
+
+    # Cargar datos iniciales SOLO si la base de datos está vacía
     if Objeto.query.count() == 0:
         print("Cargando catálogos iniciales en la base de datos...")
         misiones_iniciales = [
