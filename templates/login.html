@@ -1,37 +1,29 @@
 {% extends 'base.html' %}
-{% block title %}Logros - Gamificación UBE{% endblock %}
-{% block contenido %}
+{% block title %}Iniciar Sesión - Gamificación UBE{% endblock %}
 
-<div class="bienvenida-box">
-    <h1>🏅 Panel de Logros</h1>
-    <p>Desbloquea medallas al subir de nivel y equipa tu insignia preferida en el perfil.</p>
-</div>
+{% block contenido_auth %}
+<div class="fondo-blur" style="width: 100%; max-width: 400px; text-align: center;">
+    <h2 style="color: #a10020; margin-bottom: 1.5em;">🔑 Iniciar Sesión</h2>
 
-<div class="fondo-blur">
-    <div class="logros-grid">
-        {% for item in logros %}
-            <div class="logro-card {% if not item.desbloqueado %}bloqueado{% endif %}">
-                <img src="{{ url_for('static', filename='img/' + item.logro.imagen_url) }}" class="logro-img" alt="{{ item.logro.nombre }}">
-                
-                <div>
-                    <div class="logro-titulo">{{ item.logro.nombre }}</div>
-                    <div class="logro-desc">{{ item.logro.descripcion }}</div>
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div style="padding: 10px; margin-bottom: 15px; border-radius: 8px; background: #ffebee; color: #c6002a; font-size: 0.9em;">
+                    {{ message }}
                 </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
 
-                {% if item.desbloqueado %}
-                    <span class="estado-completado">✔ Desbloqueado</span>
-                    <a href="{{ url_for('equipar_logro', logro_id=item.logro.id) }}" class="btn-equipar" style="margin-top:0.5em; font-size:0.85em;">
-                        {% if item.equipado %}⭐ Equipado{% else %}Equipar Insignia{% endif %}
-                    </a>
-                {% else %}
-                    <span class="estado-pendiente">🔒 Nivel requerido: {{ item.logro.nivel_requerido }}</span>
-                    <div class="logro-barra-outer">
-                        <div class="logro-barra-inner" style="width: {{ item.progreso }}%;"></div>
-                    </div>
-                    <div class="logro-progreso-texto">Progreso: {{ item.progreso }}%</div>
-                {% endif %}
-            </div>
-        {% endfor %}
-    </div>
+    <form action="{{ url_for('login') }}" method="POST" style="display: flex; flex-direction: column; gap: 1em;">
+        <input type="email" name="email" placeholder="Correo electrónico" required style="padding: 12px; border-radius: 8px; border: 1px solid #ccc; font-size: 1em;">
+        <input type="password" name="password" placeholder="Contraseña" required style="padding: 12px; border-radius: 8px; border: 1px solid #ccc; font-size: 1em;">
+        
+        <button type="submit" class="btn-comprar" style="margin-top: 1em; padding: 12px; font-size: 1em;">Ingresar</button>
+    </form>
+
+    <p style="margin-top: 1.5em; font-size: 0.9em; color: #666;">
+        ¿No tienes una cuenta? <a href="{{ url_for('registro') }}" style="color: #a10020; font-weight: bold; text-decoration: none;">Regístrate aquí</a>
+    </p>
 </div>
 {% endblock %}
