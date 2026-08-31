@@ -66,9 +66,13 @@ class Estudiante(db.Model):
     xp = db.Column(db.Integer, default=0, nullable=False)
     nivel = db.Column(db.Integer, default=1, nullable=False)
     avatar_personal = db.Column(db.String(255), default='avatar-1.png')
-    marco_personal = db.Column(db.String(255), default=None, nullable=True) # MODIFICADO: No asigna marco al inicio
+    marco_personal = db.Column(db.String(255), default=None, nullable=True)
     fondo_personal = db.Column(db.String(255), default=None, nullable=True)
     
+    # Logro actualmente destacado/equipado en el avatar
+    logro_equipado_id = db.Column(db.Integer, db.ForeignKey('logros.id'), nullable=True)
+    logro_equipado = db.relationship('Logro', foreign_keys=[logro_equipado_id])
+
     inventario = db.relationship('Inventario', backref='estudiante', lazy=True, cascade="all, delete-orphan")
     progreso_misiones = db.relationship('ProgresoMision', backref='estudiante', lazy=True, cascade="all, delete-orphan")
     logros = db.relationship('Logro', secondary=estudiante_logros, backref='estudiantes', lazy='dynamic')
@@ -134,11 +138,10 @@ class EstudianteActividadCompletada(db.Model):
 
     actividad = db.relationship('Actividad', backref='completada_por_estudiantes')
 
-# --- INICIALIZACIÓN SEGURA DE LA BASE DE DATOS (MODIFICADA) ---
+# --- INICIALIZACIÓN SEGURA DE LA BASE DE DATOS ---
 with app.app_context():
     db.create_all()
 
-    # Cargar datos iniciales SOLO si la base de datos está vacía
     if Objeto.query.count() == 0:
         print("Cargando catálogos iniciales en la base de datos...")
         misiones_iniciales = [
@@ -259,25 +262,7 @@ def index():
     xp_actual_en_nivel = max(0, xp_actual_en_nivel)
     progreso_xp = (xp_actual_en_nivel / 100) * 100 if xp_necesaria_total_para_siguiente_nivel > 0 else 0
 
-    misiones_activas_db = ProgresoMision.query.filter_by(
-        estudiante_id=estudiante.id,
-        completada=False
-    ).limit(3).all() 
-
-    misiones_rapidas = []
-    for progreso_mision in misiones_activas_db:
-        mision_obj = progreso_mision.mision
-        misiones_rapidas.append({
-            'id': mision_obj.id,
-            'nombre': mision_obj.nombre,
-            'descripcion': mision_obj.descripcion,
-            'tipo': mision_obj.tipo,
-            'meta': mision_obj.meta,
-            'recompensa_puntos': mision_obj.recompensa_puntos,
-            'recompensa_xp': mision_obj.recompensa_xp,
-            'progreso_actual': progreso_mision.progreso,
-            'completada': progreso_mision.completada
-        })
+    logros_destacados = estudiante.logros.limit(3).all()
 
     return render_template('index.html',
         estudiante=estudiante, 
@@ -287,8 +272,80 @@ def index():
         xp_siguiente_nivel_total=xp_necesaria_total_para_siguiente_nivel,
         xp_restante_para_siguiente_nivel=max(0, xp_restante_para_siguiente_nivel),
         activo='panel',
-        misiones_rapidas=misiones_rapidas
+        logros_destacados=logros_destacados
     )
+
+@app.route('/logros')
+@login_required
+def mostrar_logros():
+    estudiante = db.session.get(Estudiante, session['estudiante_id'])
+    todos_los_logros = Logro.query.all()
+    logros_obtenidos_ids = {l.id for l in estudiante.logros.all()}
+
+    logros_procesados = []
+    for logro in todos_los_logros:
+        es_desbloqueado = logro.id in logros_obtenidos_ids
+        
+        if es_desbloqueado:
+            porcentaje_progreso = 100
+        else:
+            porcentaje_progreso = min(100, int((estudiante.nivel / logro.nivel_requerido) * 100))
+
+        logros_procesados.append({
+            'logro': logro,
+            'desbloqueado': es_desbloqueado,
+            'progreso': porcentaje_progreso,
+            'equipado': estudiante.logro_equipado_id == logro.id
+        })
+
+    return render_template('logros.html', 
+                           estudiante=estudiante, 
+                           logros=logros_procesados, 
+                           activo='logros')
+
+@app.route('/equipar_logro/<int:logro_id>')
+@login_required
+def equipar_logro(logro_id):
+    estudiante = db.session.get(Estudiante, session['estudiante_id'])
+    logro = db.session.get(Logro, logro_id)
+
+    if logro in estudiante.logros:
+        if estudiante.logro_equipado_id == logro.id:
+            estudiante.logro_equipado_id = None
+            flash(f"Has desequipado el logro '{logro.nombre}'.", "info")
+        else:
+            estudiante.logro_equipado_id = logro.id
+            flash(f"¡Has equipado el logro '{logro.nombre}'!", "success")
+        db.session.commit()
+    else:
+        flash("No puedes equipar un logro que aún no has desbloqueado.", "danger")
+
+    return redirect(url_for('mostrar_logros'))
+
+@app.route("/ranking")
+@login_required
+def ranking():
+    estudiante_actual = db.session.get(Estudiante, session['estudiante_id'])
+    ranking_estudiantes = Estudiante.query.order_by(Estudiante.puntos.desc(), Estudiante.xp.desc()).all()
+
+    return render_template("ranking.html", 
+        ranking=ranking_estudiantes, 
+        activo='ranking',
+        estudiante=estudiante_actual
+    )
+
+@app.route("/perfil/<int:estudiante_id>")
+@login_required
+def ver_perfil(estudiante_id):
+    estudiante_visitado = db.session.get(Estudiante, estudiante_id)
+    if not estudiante_visitado:
+        flash("Estudiante no encontrado.", "danger")
+        return redirect(url_for('ranking'))
+
+    estudiante_actual = db.session.get(Estudiante, session['estudiante_id'])
+    return render_template("perfil_publico.html", 
+                           estudiante_visitado=estudiante_visitado, 
+                           estudiante=estudiante_actual)
 
 @app.route("/tienda")
 @login_required
@@ -374,21 +431,6 @@ def equipar(tipo, obj_id):
     flash("¡Objeto equipado con éxito!", "success")
     return redirect(url_for('inventario'))
 
-@app.route("/ranking")
-@login_required
-def ranking():
-    estudiante_actual = db.session.get(Estudiante, session['estudiante_id'])
-    ranking_estudiantes = Estudiante.query.order_by(Estudiante.puntos.desc(), Estudiante.xp.desc()).all()
-
-    return render_template("ranking.html", 
-        ranking=ranking_estudiantes, 
-        activo='ranking',
-        estudiante=estudiante_actual,
-        avatar=estudiante_actual.avatar_personal, 
-        marco=estudiante_actual.marco_personal, 
-        name=estudiante_actual.nombre
-    )
-
 @app.route('/misiones')
 @login_required
 def mostrar_misiones():
@@ -419,16 +461,6 @@ def mostrar_misiones():
         })
 
     return render_template('misiones.html', misiones=misiones_con_progreso, estudiante=estudiante)
-
-@app.route('/logros')
-@login_required
-def mostrar_logros():
-    estudiante = db.session.get(Estudiante, session['estudiante_id'])
-    return render_template('logros.html', 
-                           estudiante=estudiante, 
-                           logros_obtenidos=estudiante.logros.all(), 
-                           activo='logros' 
-                          )
 
 @app.route('/completar_actividad/<int:actividad_id>')
 @login_required
@@ -540,6 +572,7 @@ def resetear_progreso():
     estudiante.avatar_personal = 'avatar-1.png'
     estudiante.marco_personal = None
     estudiante.fondo_personal = None
+    estudiante.logro_equipado_id = None
     
     Inventario.query.filter_by(estudiante_id=estudiante.id).delete()
     ProgresoMision.query.filter_by(estudiante_id=estudiante.id).delete()
@@ -678,6 +711,7 @@ def inject_user_data():
         name=estudiante.nombre,
         avatar=estudiante.avatar_personal,
         marco=estudiante.marco_personal,
+        logro_equipado=estudiante.logro_equipado,
         misiones_sidebar=[p for p in estudiante.progreso_misiones if not p.completada],
         misiones_activas_count=misiones_activas_count
     )
