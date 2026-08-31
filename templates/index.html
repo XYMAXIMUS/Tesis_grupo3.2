@@ -19,13 +19,17 @@
                 <img src="{{ url_for('static', filename='img/marcos/' + estudiante.marco_personal) }}" class="marco-inicio" alt="Marco">
             {% endif %}
 
-            <!-- Medalla/Logro pequeño -->
-            {% if estudiante.logros.all() %}
-                {% set primer_logro = estudiante.logros.all()[0] %}
-                <img src="{{ url_for('static', filename='img/' + primer_logro.imagen_url) }}" 
+            <!-- Insignia equipada o primera medalla obtenida (pequeño distintivo en la esquina del avatar) -->
+            {% if estudiante.logro_equipado %}
+                <img src="{{ url_for('static', filename='img/' + estudiante.logro_equipado.imagen_url) }}" 
                      class="logro-pequeno-avatar" 
-                     alt="Logro: {{ primer_logro.nombre }}"
-                     title="Logro: {{ primer_logro.nombre }}">
+                     alt="Insignia: {{ estudiante.logro_equipado.nombre }}"
+                     title="Insignia Equipada: {{ estudiante.logro_equipado.nombre }}">
+            {% elif estudiante.logros.all() %}
+                <img src="{{ url_for('static', filename='img/' + estudiante.logros.all()[0].imagen_url) }}" 
+                     class="logro-pequeno-avatar" 
+                     alt="Logro: {{ estudiante.logros.all()[0].nombre }}"
+                     title="Insignia: {{ estudiante.logros.all()[0].nombre }}">
             {% endif %}
         </div>
 
@@ -38,8 +42,23 @@
             <div class="barra-xp-inner" style="width: {{ progreso_xp }}%;"></div>
         </div>
 
-        <div style="color:#888; font-size:0.97em; margin-bottom:1em;">
+        <div style="color:#888; font-size:0.97em; margin-bottom:1.5em;">
             XP: {{ xp_actual }} / {{ xp_siguiente_nivel_total }} (Faltan {{ xp_restante_para_siguiente_nivel }} XP)
+        </div>
+
+        <!-- MUESTRA INTERACTIVA DE LOS 3 LOGROS DESTACADOS -->
+        <div style="border-top: 1px solid #eee; padding-top: 1em;">
+            <h4 style="margin: 0 0 0.8em 0; color: #a10020; font-size: 1.05em;">🏅 Logros Destacados</h4>
+            <div style="display: flex; justify-content: center; gap: 12px; align-items: center;">
+                {% for logro in logros_destacados %}
+                    <img src="{{ url_for('static', filename='img/' + logro.imagen_url) }}" 
+                         style="width: 45px; height: 45px; object-fit: contain; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.15));" 
+                         alt="{{ logro.nombre }}" 
+                         title="{{ logro.nombre }}: {{ logro.descripcion }}">
+                {% else %}
+                    <p style="font-size: 0.85em; color: #888; margin: 0;">Aún no has desbloqueado logros.</p>
+                {% endfor %}
+            </div>
         </div>
     </div>
 
