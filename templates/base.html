@@ -6,26 +6,28 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 </head>
-<body class="layout-ube">
+<body class="{% if session.get('estudiante_id') %}layout-ube{% else %}layout-auth{% endif %}">
 
     <nav class="menu-lateral">
-        {% if session['estudiante_id'] %}
+        {% if session.get('estudiante_id') %}
         <div class="perfil-menu">
             <div class="avatar-container">
-                <!-- Foto de perfil centrada -->
                 <img src="{{ url_for('static', filename='img/avatares/' + avatar) }}" class="avatar-menu" alt="Avatar">
                 
-                <!-- Marco superpuesto por encima -->
-                {% if marco %}
+                {% if marco and marco != 'None' and marco != '' %}
                     <img src="{{ url_for('static', filename='img/marcos/' + marco) }}" class="marco-menu" alt="Marco">
                 {% endif %}
             </div>
             <div class="nombre-usuario">{{ name }}</div>
         </div>
+        {% else %}
+        <div class="perfil-menu">
+            <h3 style="margin: 10px 0; color: white;">Gamificación UBE</h3>
+        </div>
         {% endif %}
 
         <ul class="nav-links">
-            {% if session['estudiante_id'] %}
+            {% if session.get('estudiante_id') %}
                 <li><a href="{{ url_for('index') }}" {% if activo=='panel' %}class="active"{% endif %}>Panel</a></li>
                 <li><a href="{{ url_for('tienda') }}" {% if activo=='tienda' %}class="active"{% endif %}>Tienda</a></li>
                 <li><a href="{{ url_for('inventario') }}" {% if activo=='inventario' %}class="active"{% endif %}>Inventario</a></li>
@@ -33,36 +35,41 @@
                 <li><a href="{{ url_for('mostrar_logros') }}" {% if activo=='logros' %}class="active"{% endif %}>Logros</a></li>
                 <li><a href="{{ url_for('ranking') }}" {% if activo=='ranking' %}class="active"{% endif %}>Ranking</a></li>
                 <li><a href="{{ url_for('juegos') }}" {% if activo=='juegos' %}class="active"{% endif %}>Juegos</a></li>
-                {# ENLACE A HISTORIAL DE ACTIVIDADES (solo este) #}
                 <li><a href="{{ url_for('mostrar_historial_actividades') }}" {% if activo=='historial_actividades' %}class="active"{% endif %}>Historial Act.</a></li>
                 <li><a href="{{ url_for('logout') }}">Cerrar Sesión</a></li>
             {% else %}
-                <li><a href="{{ url_for('login') }}">Iniciar Sesión</a></li>
+                <li><a href="{{ url_for('login') }}" class="active">Iniciar Sesión</a></li>
                 <li><a href="{{ url_for('registro') }}">Registrarse</a></li>
             {% endif %}
         </ul>
     </nav>
 
     <main class="contenido-central">
-        <button class="btn-mostrar-misiones" onclick="toggleMisiones()">Misiones ☰</button>
+        {% if session.get('estudiante_id') %}
+            <button class="btn-mostrar-misiones" onclick="toggleMisiones()">Misiones ☰</button>
+        {% endif %}
+
         <div id="flash-container">
             {% with messages = get_flashed_messages(with_categories=true) %}
                 {% if messages %}
                     {% for category, message in messages %}
-                        <div class="alert alert-{{ category }}">{{ message }}</div>
+                        <div class="alert alert-{{ category }}" style="padding:10px 15px; margin-bottom:15px; border-radius:8px; background:#ffebee; color:#c6002a; font-weight:bold;">
+                            {{ message }}
+                        </div>
                     {% endfor %}
                 {% endif %}
             {% endwith %}
         </div>
+
         {% block contenido %}{% endblock %}
     </main>
 
-    {% if session['estudiante_id'] %}
+    {% if session.get('estudiante_id') %}
     <aside class="sidebar-misiones">
         <button class="btn-ocultar" onclick="toggleMisiones()">Ocultar</button>
         <h3>
             Misiones
-            {% if misiones_activas_count > 0 %}
+            {% if misiones_activas_count and misiones_activas_count > 0 %}
                 <span class="mision-conteo">{{ misiones_activas_count }}</span>
             {% endif %}
         </h3>
@@ -75,11 +82,12 @@
                           Progreso: {{ p.progreso }}/{{ p.mision.meta }}
                           <div class="progreso-barra">
                             <div class="progreso-barra-interna" style="width: {{ (p.progreso / p.mision.meta * 100) | int }}%;"></div>
-
                           </div>
                         </div>
                     </div>
                 {% endif %}
+            {% else %}
+                <p style="font-size:0.85em; color:#888;">No tienes misiones pendientes.</p>
             {% endfor %}
             <a href="{{ url_for('mostrar_misiones') }}" class="btn-ver-todas">Ver Todas</a>
         </div>
@@ -91,7 +99,6 @@ function toggleMisiones() {
     document.body.classList.toggle('misiones-ocultas');
 }
 
-// Script para ocultar mensajes flash
 document.addEventListener('DOMContentLoaded', (event) => {
     const flashContainer = document.getElementById('flash-container');
     if (flashContainer && flashContainer.children.length > 0) {
@@ -100,7 +107,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
             setTimeout(() => {
                 flashContainer.style.display = 'none';
             }, 500);
-        }, 2000);
+        }, 3500);
     }
 });
 </script>
