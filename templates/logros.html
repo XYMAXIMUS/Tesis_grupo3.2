@@ -2,9 +2,88 @@
 {% block title %}Logros - Gamificación UBE{% endblock %}
 {% block contenido %}
 
+<style>
+/* --- ESTILOS MEJORADOS PARA TARJETAS Y GIFS --- */
+.logro-card {
+    position: relative;
+    background: #ffffff;
+    border-radius: 12px;
+    padding: 18px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.logro-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 20px rgba(0,0,0,0.12);
+}
+
+/* Estado Bloqueado: Fondo grisáceo y recuadro */
+.logro-card.bloqueado {
+    background: #f8f9fa;
+    border: 2px dashed #ced4da;
+}
+
+/* Efecto para el GIF/Imagen dentro del contenedor bloqueado */
+.logro-card.bloqueado .logro-img-container img {
+    filter: grayscale(100%) opacity(0.35);
+    transition: filter 0.4s ease, transform 0.3s ease;
+}
+
+/* Al pasar el cursor sobre la tarjeta bloqueada, cobra color y animación */
+.logro-card.bloqueado:hover .logro-img-container img {
+    filter: grayscale(0%) opacity(1);
+    transform: scale(1.08);
+}
+
+.logro-img {
+    width: 95px;
+    height: 95px;
+    object-fit: contain;
+    margin: 0 auto 12px auto;
+    display: block;
+}
+
+/* Etiqueta flotante de Candado */
+.candado-overlay {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: rgba(108, 117, 125, 0.9);
+    color: white;
+    padding: 3px 10px;
+    border-radius: 15px;
+    font-size: 0.78em;
+    font-weight: bold;
+    z-index: 2;
+}
+
+.estado-completado {
+    color: #198754;
+    font-weight: bold;
+    font-size: 0.9em;
+}
+
+.logro-barra-outer {
+    background: #e9ecef;
+    border-radius: 10px;
+    height: 10px;
+    overflow: hidden;
+}
+
+.logro-barra-inner {
+    background: linear-gradient(90deg, #ffc107, #a10020);
+    height: 100%;
+    transition: width 0.5s ease;
+}
+</style>
+
 <div class="bienvenida-box">
-    <h1>🏅 Panel de Logros e Insignias</h1>
-    <p>Consulta todos los logros disponibles, revisa los requisitos para desbloquearlos y equipa tu insignia en el perfil.</p>
+    <h1>🏅 Panel de Logros e Insignias Especiales</h1>
+    <p>Consulta tus logros, pasa el cursor sobre los bloqueados para animarlos y equipa tus medallas en el perfil.</p>
 </div>
 
 <div class="fondo-blur">
@@ -12,46 +91,48 @@
         {% for item in logros %}
             <div class="logro-card {% if not item.desbloqueado %}bloqueado{% endif %}">
                 
-                <!-- Imagen del Logro / Gif de Nivel -->
-                <div style="position: relative; display: inline-block;">
+                {% if not item.desbloqueado %}
+                    <div class="candado-overlay">🔒 Bloqueado</div>
+                {% endif %}
+
+                <div class="logro-img-container" style="text-align: center;">
                     <img src="{{ url_for('static', filename='img/' + item.logro.imagen_url) }}" 
                          class="logro-img" 
                          alt="{{ item.logro.nombre }}">
-                    {% if not item.desbloqueado %}
-                        <span style="position: absolute; top: 0; right: 0; background: rgba(0,0,0,0.6); color: white; padding: 2px 6px; border-radius: 50%; font-size: 0.8em;">🔒</span>
-                    {% endif %}
                 </div>
                 
-                <div>
-                    <div class="logro-titulo">{{ item.logro.nombre }}</div>
-                    <div class="logro-desc">{{ item.logro.descripcion }}</div>
+                <div style="text-align: center; margin-bottom: 8px;">
+                    <div class="logro-titulo" style="font-weight: bold; color: #212529; font-size: 1.1em; margin-bottom: 4px;">
+                        {{ item.logro.nombre }}
+                    </div>
+                    <div class="logro-desc" style="font-size: 0.88em; color: #6c757d;">
+                        {{ item.logro.descripcion }}
+                    </div>
                 </div>
 
-                <!-- Estado y Progreso del Logro -->
                 {% if item.desbloqueado %}
-                    <div style="margin-top: 0.5em;">
+                    <div style="margin-top: 0.5em; text-align: center;">
                         <span class="estado-completado">✔ ¡Desbloqueado!</span>
                         <a href="{{ url_for('equipar_logro', logro_id=item.logro.id) }}" 
                            class="btn-equipar" 
-                           style="margin-top: 0.6em; font-size: 0.85em; display: block; text-align: center;">
+                           style="margin-top: 0.6em; font-size: 0.85em; display: block; padding: 8px; background: #a10020; color: white; border-radius: 6px; text-decoration: none; font-weight: bold;">
                             {% if item.equipado %}⭐ Equipado en Perfil{% else %}Equipar Insignia{% endif %}
                         </a>
                     </div>
                 {% else %}
-                    <div style="margin-top: 0.5em; text-align: left; background: #f8f9fa; padding: 10px; border-radius: 8px; border: 1px solid #e9ecef;">
-                        <div style="font-size: 0.82em; color: #d63384; font-weight: bold; margin-bottom: 4px;">
+                    <div style="margin-top: 0.5em; text-align: left; background: #ffffff; padding: 10px; border-radius: 8px; border: 1px solid #dee2e6;">
+                        <div style="font-size: 0.82em; color: #a10020; font-weight: bold; margin-bottom: 4px;">
                             🎯 ¿Qué hacer para desbloquear?
                         </div>
                         <div style="font-size: 0.8em; color: #495057;">
                             Alcanzar el <b>Nivel {{ item.logro.nivel_requerido }}</b> (Tu nivel actual: {{ estudiante.nivel }})
                         </div>
 
-                        <!-- Barra de Progreso Dinámica -->
                         <div class="logro-barra-outer" style="margin-top: 8px;">
                             <div class="logro-barra-inner" style="width: {{ item.progreso }}%;"></div>
                         </div>
-                        <div class="logro-progreso-texto" style="text-align: right; font-weight: bold; font-size: 0.75em; color: #6c757d;">
-                            Progreso: {{ item.progreso }}%
+                        <div class="logro-progreso-texto" style="text-align: right; font-weight: bold; font-size: 0.78em; color: #6c757d; margin-top: 4px;">
+                            Progreso actual: {{ item.progreso }}%
                         </div>
                     </div>
                 {% endif %}
