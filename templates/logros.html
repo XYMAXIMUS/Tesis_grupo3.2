@@ -1,25 +1,64 @@
 {% extends 'base.html' %}
-{% block title %}Tus Logros - Gamificación UBE{% endblock %}
-
+{% block title %}Logros - Gamificación UBE{% endblock %}
 {% block contenido %}
+
+<div class="bienvenida-box">
+    <h1>🏅 Panel de Logros e Insignias</h1>
+    <p>Consulta todos los logros disponibles, revisa los requisitos para desbloquearlos y equipa tu insignia en el perfil.</p>
+</div>
+
 <div class="fondo-blur">
-    <h2>🏅 Tus Logros Desbloqueados</h2>
-    
     <div class="logros-grid">
-        {% if logros_obtenidos %}
-            {% for logro in logros_obtenidos %}
-            <div class="logro-card">
-                <img src="{{ url_for('static', filename='img/' + logro.imagen_url) }}" alt="Logro: {{ logro.nombre }}" class="logro-imagen">
-                <div class="logro-info">
-                    <h3 class="logro-nombre">{{ logro.nombre }}</h3>
-                    <p class="logro-descripcion">{{ logro.descripcion }}</p>
-                    <span class="logro-nivel">Nivel Requerido: {{ logro.nivel_requerido }}</span>
+        {% for item in logros %}
+            <div class="logro-card {% if not item.desbloqueado %}bloqueado{% endif %}">
+                
+                <!-- Imagen del Logro / Gif de Nivel -->
+                <div style="position: relative; display: inline-block;">
+                    <img src="{{ url_for('static', filename='img/' + item.logro.imagen_url) }}" 
+                         class="logro-img" 
+                         alt="{{ item.logro.nombre }}">
+                    {% if not item.desbloqueado %}
+                        <span style="position: absolute; top: 0; right: 0; background: rgba(0,0,0,0.6); color: white; padding: 2px 6px; border-radius: 50%; font-size: 0.8em;">🔒</span>
+                    {% endif %}
                 </div>
+                
+                <div>
+                    <div class="logro-titulo">{{ item.logro.nombre }}</div>
+                    <div class="logro-desc">{{ item.logro.descripcion }}</div>
+                </div>
+
+                <!-- Estado y Progreso del Logro -->
+                {% if item.desbloqueado %}
+                    <div style="margin-top: 0.5em;">
+                        <span class="estado-completado">✔ ¡Desbloqueado!</span>
+                        <a href="{{ url_for('equipar_logro', logro_id=item.logro.id) }}" 
+                           class="btn-equipar" 
+                           style="margin-top: 0.6em; font-size: 0.85em; display: block; text-align: center;">
+                            {% if item.equipado %}⭐ Equipado en Perfil{% else %}Equipar Insignia{% endif %}
+                        </a>
+                    </div>
+                {% else %}
+                    <div style="margin-top: 0.5em; text-align: left; background: #f8f9fa; padding: 10px; border-radius: 8px; border: 1px solid #e9ecef;">
+                        <div style="font-size: 0.82em; color: #d63384; font-weight: bold; margin-bottom: 4px;">
+                            🎯 ¿Qué hacer para desbloquear?
+                        </div>
+                        <div style="font-size: 0.8em; color: #495057;">
+                            Alcanzar el <b>Nivel {{ item.logro.nivel_requerido }}</b> (Tu nivel actual: {{ estudiante.nivel }})
+                        </div>
+
+                        <!-- Barra de Progreso Dinámica -->
+                        <div class="logro-barra-outer" style="margin-top: 8px;">
+                            <div class="logro-barra-inner" style="width: {{ item.progreso }}%;"></div>
+                        </div>
+                        <div class="logro-progreso-texto" style="text-align: right; font-weight: bold; font-size: 0.75em; color: #6c757d;">
+                            Progreso: {{ item.progreso }}%
+                        </div>
+                    </div>
+                {% endif %}
+
             </div>
-            {% endfor %}
-        {% else %}
-            <div class="mensaje-vacio">Aún no has desbloqueado ningún logro. ¡Sigue jugando y completando misiones!</div>
-        {% endif %}
+        {% endfor %}
     </div>
 </div>
+
 {% endblock %}
