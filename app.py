@@ -70,7 +70,6 @@ class Estudiante(db.Model):
     marco_personal = db.Column(db.String(255), default=None, nullable=True)
     fondo_personal = db.Column(db.String(255), default=None, nullable=True)
     
-    # Contadores para avance real de logros
     dias_sesion = db.Column(db.Integer, default=1)
     secciones_visitadas = db.Column(db.Integer, default=1)
     
@@ -125,7 +124,7 @@ class Logro(db.Model):
     nombre = db.Column(db.String(100), nullable=False)
     descripcion = db.Column(db.Text)
     imagen_url = db.Column(db.String(255))
-    tipo_requisito = db.Column(db.String(50), default='nivel') # 'nivel', 'compra', 'visita', 'dias'
+    tipo_requisito = db.Column(db.String(50), default='nivel') 
     meta_requisito = db.Column(db.Integer, default=1)
 
 class Actividad(db.Model):
@@ -151,6 +150,8 @@ with app.app_context():
         db.session.execute(text("ALTER TABLE estudiantes ADD COLUMN IF NOT EXISTS logro_equipado_id INTEGER REFERENCES logros(id);"))
         db.session.execute(text("ALTER TABLE estudiantes ADD COLUMN IF NOT EXISTS dias_sesion INTEGER DEFAULT 1;"))
         db.session.execute(text("ALTER TABLE estudiantes ADD COLUMN IF NOT EXISTS secciones_visitadas INTEGER DEFAULT 1;"))
+        db.session.execute(text("ALTER TABLE logros ADD COLUMN IF NOT EXISTS tipo_requisito VARCHAR(50) DEFAULT 'nivel';"))
+        db.session.execute(text("ALTER TABLE logros ADD COLUMN IF NOT EXISTS meta_requisito INTEGER DEFAULT 1;"))
         db.session.commit()
     except Exception as e:
         db.session.rollback()
@@ -194,10 +195,7 @@ with app.app_context():
         db.session.add_all(actividades_iniciales)
         db.session.commit()
 
-    # SINCRONIZACIÓN Y REORGANIZACIÓN DE CATALOGO DE LOGROS
-    Logro.query.delete()
-    db.session.commit()
-
+    # POBLACIÓN/SINCRONIZACIÓN SEGURA DE LOGROS (SIN ELIMINAR REGISTROS)
     catalogo_logros = [
         Logro(nombre="Primer Paso", descripcion="Realiza tu primera compra en la tienda.", imagen_url="medallas/Medalla_Primer_Compra.png", tipo_requisito="compra", meta_requisito=1),
         Logro(nombre="Explorador", descripcion="Visita al menos 3 secciones distintas de la plataforma.", imagen_url="medallas/Medalla_Explorador_de_Juegos.png", tipo_requisito="visita", meta_requisito=3),
@@ -210,7 +208,17 @@ with app.app_context():
         Logro(nombre="Leyenda Nivel 10", descripcion="Demuestra tu constancia alcanzando el Nivel 10.", imagen_url="logros_especiales/nivel_10.gif", tipo_requisito="nivel", meta_requisito=10),
     ]
 
-    db.session.add_all(catalogo_logros)
+    logros_existentes = {l.nombre: l for l in Logro.query.all()}
+    for log in catalogo_logros:
+        if log.nombre not in logros_existentes:
+            db.session.add(log)
+        else:
+            obj = logros_existentes[log.nombre]
+            obj.descripcion = log.descripcion
+            obj.imagen_url = log.imagen_url
+            obj.tipo_requisito = log.tipo_requisito
+            obj.meta_requisito = log.meta_requisito
+
     db.session.commit()
 
 # REGISTRAR VISITAS A SECCIONES PARA EL LOGRO EXPLORADOR
