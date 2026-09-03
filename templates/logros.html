@@ -3,7 +3,7 @@
 {% block contenido %}
 
 <style>
-/* --- ESTILOS MEJORADOS PARA TARJETAS Y GIFS --- */
+/* --- ESTILOS MEJORADOS PARA TARJETAS DE LOGROS --- */
 .logro-card {
     position: relative;
     background: #ffffff;
@@ -21,19 +21,19 @@
     box-shadow: 0 8px 20px rgba(0,0,0,0.12);
 }
 
-/* Estado Bloqueado: Fondo grisáceo y recuadro */
+/* Estado Bloqueado: Fondo gris y borde punteado */
 .logro-card.bloqueado {
     background: #f8f9fa;
     border: 2px dashed #ced4da;
 }
 
-/* Efecto para el GIF/Imagen dentro del contenedor bloqueado */
+/* Efecto de escala de grises para GIF/Imagen */
 .logro-card.bloqueado .logro-img-container img {
     filter: grayscale(100%) opacity(0.35);
     transition: filter 0.4s ease, transform 0.3s ease;
 }
 
-/* Al pasar el cursor sobre la tarjeta bloqueada, cobra color y animación */
+/* Animación en vivo y color completo al colocar el cursor encima */
 .logro-card.bloqueado:hover .logro-img-container img {
     filter: grayscale(0%) opacity(1);
     transform: scale(1.08);
@@ -98,7 +98,8 @@
                 <div class="logro-img-container" style="text-align: center;">
                     <img src="{{ url_for('static', filename='img/' + item.logro.imagen_url) }}" 
                          class="logro-img" 
-                         alt="{{ item.logro.nombre }}">
+                         alt="{{ item.logro.nombre }}"
+                         onerror="this.onerror=null; this.src='{{ url_for('static', filename='img/logros_especiales/nivel_1.gif') }}';">
                 </div>
                 
                 <div style="text-align: center; margin-bottom: 8px;">
@@ -125,7 +126,7 @@
                             🎯 ¿Qué hacer para desbloquear?
                         </div>
                         <div style="font-size: 0.8em; color: #495057;">
-                            Alcanzar el <b>Nivel {{ item.logro.nivel_requerido }}</b> (Tu nivel actual: {{ estudiante.nivel }})
+                            {{ item.texto_objetivo }}
                         </div>
 
                         <div class="logro-barra-outer" style="margin-top: 8px;">
