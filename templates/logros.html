@@ -61,12 +61,6 @@
     z-index: 2;
 }
 
-.estado-completado {
-    color: #198754;
-    font-weight: bold;
-    font-size: 0.9em;
-}
-
 .logro-barra-outer {
     background: #e9ecef;
     border-radius: 10px;
@@ -79,19 +73,63 @@
     height: 100%;
     transition: width 0.5s ease;
 }
+
+/* Ventanas Modales y Botón de Reclamar */
+.modal-overlay {
+    position: fixed;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0, 0, 0, 0.7);
+    display: flex; align-items: center; justify-content: center;
+    z-index: 9999;
+    backdrop-filter: blur(4px);
+}
+
+.modal-box {
+    background: #ffffff;
+    padding: 2.2em;
+    border-radius: 18px;
+    text-align: center;
+    max-width: 440px;
+    width: 90%;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+    animation: popIn 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+@keyframes popIn {
+    0% { transform: scale(0.5); opacity: 0; }
+    100% { transform: scale(1); opacity: 1; }
+}
+
+.btn-reclamar-anim {
+    background: linear-gradient(45deg, #28a745, #20c997);
+    color: white;
+    font-weight: bold;
+    padding: 10px 15px;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+    width: 100%;
+    animation: pulseBtn 1.5s infinite;
+}
+
+@keyframes pulseBtn {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.03); }
+    100% { transform: scale(1); }
+}
 </style>
 
 <div class="bienvenida-box">
     <h1>🏅 Panel de Logros e Insignias Especiales</h1>
-    <p>Consulta tus logros, pasa el cursor sobre los bloqueados para animarlos y equipa tus medallas en el perfil.</p>
+    <p>Consulta tus logros, pasa el cursor sobre los bloqueados para animarlos y completa los objetivos para enviarlos a tu inventario.</p>
 </div>
 
 <div class="fondo-blur">
     <div class="logros-grid">
         {% for item in logros %}
-            <div class="logro-card {% if not item.desbloqueado %}bloqueado{% endif %}">
+            <div class="logro-card {% if not item.desbloqueado and item.progreso < 100 %}bloqueado{% endif %}">
                 
-                {% if not item.desbloqueado %}
+                {% if not item.desbloqueado and item.progreso < 100 %}
                     <div class="candado-overlay">🔒 Bloqueado</div>
                 {% endif %}
 
@@ -113,13 +151,15 @@
 
                 {% if item.desbloqueado %}
                     <div style="margin-top: 0.5em; text-align: center;">
-                        <span class="estado-completado">✔ ¡Desbloqueado!</span>
-                        <a href="{{ url_for('equipar_logro', logro_id=item.logro.id) }}" 
-                           class="btn-equipar" 
-                           style="margin-top: 0.6em; font-size: 0.85em; display: block; padding: 8px; background: #a10020; color: white; border-radius: 6px; text-decoration: none; font-weight: bold;">
-                            {% if item.equipado %}⭐ Equipado en Perfil{% else %}Equipar Insignia{% endif %}
+                        <span style="color: #198754; font-weight: bold; font-size: 0.9em;">✔ Reclamado en Inventario</span>
+                        <a href="{{ url_for('inventario') }}" style="display: block; font-size: 0.8em; color: #0d6efd; margin-top: 4px; text-decoration: underline;">
+                            Ir al Inventario para Equipar
                         </a>
                     </div>
+                {% elif item.progreso >= 100 %}
+                    <button class="btn-reclamar-anim" onclick="mostrarModalDesbloqueo('{{ item.logro.id }}', '{{ item.logro.nombre }}', '{{ url_for('static', filename='img/' + item.logro.imagen_url) }}')">
+                        🎁 ¡Desbloquear Logro!
+                    </button>
                 {% else %}
                     <div style="margin-top: 0.5em; text-align: left; background: #ffffff; padding: 10px; border-radius: 8px; border: 1px solid #dee2e6;">
                         <div style="font-size: 0.82em; color: #a10020; font-weight: bold; margin-bottom: 4px;">
@@ -142,5 +182,29 @@
         {% endfor %}
     </div>
 </div>
+
+<div id="modalDesbloqueo" class="modal-overlay" style="display:none;">
+    <div class="modal-box">
+        <h2 style="color: #a10020; margin-bottom: 5px;">🎉 ¡LOGRO DESBLOQUEADO! 🎉</h2>
+        <img id="modalLogroImg" src="" style="width: 100px; height: 100px; object-fit: contain; margin: 15px 0;">
+        <h3 id="modalLogroNombre" style="color: #212529;"></h3>
+        <p style="color: #198754; font-weight: bold; margin-top: 10px;">¡Felicitaciones! Has completado todos los requisitos.</p>
+        <p style="font-size: 0.82em; color: #6c757d; margin-top: 5px;">
+            * Tu logro/insignia ha sido enviado a tu <b>Inventario</b>. Puedes ir allí en cualquier momento para equiparlo en tu perfil público.
+        </p>
+        <a id="modalConfirmarBtn" href="#" class="btn-reclamar-anim" style="display: block; text-decoration: none; margin-top: 15px;">
+            Aceptar y Reclamar
+        </a>
+    </div>
+</div>
+
+<script>
+function mostrarModalDesbloqueo(id, nombre, imgUrl) {
+    document.getElementById('modalLogroNombre').innerText = nombre;
+    document.getElementById('modalLogroImg').src = imgUrl;
+    document.getElementById('modalConfirmarBtn').href = "/reclamar_logro/" + id;
+    document.getElementById('modalDesbloqueo').style.display = 'flex';
+}
+</script>
 
 {% endblock %}
