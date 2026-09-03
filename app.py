@@ -195,17 +195,23 @@ with app.app_context():
         db.session.add_all(actividades_iniciales)
         db.session.commit()
 
-    # POBLACIÓN/SINCRONIZACIÓN SEGURA DE LOGROS (SIN ELIMINAR REGISTROS)
+    # POBLACIÓN/SINCRONIZACIÓN COMPLETA DE LOGROS
     catalogo_logros = [
+        # Medallas de la plataforma
         Logro(nombre="Primer Paso", descripcion="Realiza tu primera compra en la tienda.", imagen_url="medallas/Medalla_Primer_Compra.png", tipo_requisito="compra", meta_requisito=1),
         Logro(nombre="Explorador", descripcion="Visita al menos 3 secciones distintas de la plataforma.", imagen_url="medallas/Medalla_Explorador_de_Juegos.png", tipo_requisito="visita", meta_requisito=3),
+        Logro(nombre="Maestro de Memoria", descripcion="Demuestra tus habilidades completando el juego de memoria.", imagen_url="medallas/Medalla_Maestro_de_Memoria.png", tipo_requisito="nivel", meta_requisito=2),
         Logro(nombre="Constancia Semanal", descripcion="Inicia sesión durante 7 días.", imagen_url="medallas/Medalla_Constancia_Semanal.png", tipo_requisito="dias", meta_requisito=7),
+        
+        # Logros Especiales Animados (GIFs por Nivel)
         Logro(nombre="Iniciante Gamer", descripcion="Comienza tu trayectoria en el Nivel 1.", imagen_url="logros_especiales/nivel_1.gif", tipo_requisito="nivel", meta_requisito=1),
         Logro(nombre="Aventurero Nivel 2", descripcion="Demuestra tu avance alcanzando el Nivel 2.", imagen_url="logros_especiales/nivel_2.gif", tipo_requisito="nivel", meta_requisito=2),
         Logro(nombre="Promesa Gamer", descripcion="Llega al Nivel 3 completando misiones.", imagen_url="logros_especiales/nivel_3.gif", tipo_requisito="nivel", meta_requisito=3),
         Logro(nombre="Experto Nivel 4", descripcion="Consigue llegar al Nivel 4.", imagen_url="logros_especiales/nivel_4.gif", tipo_requisito="nivel", meta_requisito=4),
         Logro(nombre="Veterano Nivel 5", descripcion="Alcanza el prestigioso Nivel 5.", imagen_url="logros_especiales/nivel_5.gif", tipo_requisito="nivel", meta_requisito=5),
         Logro(nombre="Leyenda Nivel 10", descripcion="Demuestra tu constancia alcanzando el Nivel 10.", imagen_url="logros_especiales/nivel_10.gif", tipo_requisito="nivel", meta_requisito=10),
+        Logro(nombre="Maestro Nivel 15", descripcion="Alcanza el Nivel 15 en la plataforma.", imagen_url="logros_especiales/nivel_15.gif", tipo_requisito="nivel", meta_requisito=15),
+        Logro(nombre="Campeón Nivel 20", descripcion="Llega al nivel máximo de maestría.", imagen_url="logros_especiales/nivel_20.gif", tipo_requisito="nivel", meta_requisito=20),
     ]
 
     logros_existentes = {l.nombre: l for l in Logro.query.all()}
