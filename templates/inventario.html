@@ -2,30 +2,107 @@
 {% block title %}Inventario - Gamificación UBE{% endblock %}
 
 {% block contenido %}
+<style>
+.seccion-bloque {
+    margin-bottom: 30px;
+}
+
+.titulo-seccion {
+    font-size: 1.3em;
+    font-weight: bold;
+    color: #a10020;
+    border-bottom: 2px solid #a10020;
+    padding-bottom: 6px;
+    margin-bottom: 15px;
+}
+
+.grid-items {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 15px;
+}
+
+.card-inv {
+    background: #ffffff;
+    border-radius: 12px;
+    padding: 15px;
+    text-align: center;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.card-inv.logro-item {
+    border: 2px solid #ffc107;
+    background: #fffdf5;
+}
+</style>
+
+<div class="bienvenida-box">
+    <h1>🎒 Tu Inventario Gamer</h1>
+    <p>Gestiona tus artículos de la tienda y equipa las insignias de logros que has reclamado.</p>
+</div>
+
 <div class="fondo-blur">
-  <h2>Tu Inventario</h2>
-  
-  <div class="inventario-lista">
-    {% for item in inventario %}
-      <div class="objeto-inventario">
-        <img src="{{ url_for('static', filename='img/' + item.objeto.imagen_url) }}" alt="{{ item.objeto.nombre }}" class="objeto-imagen">
-        <div class="objeto-nombre">{{ item.objeto.nombre }}</div>
-        
-        {% set imagen_nombre = item.objeto.imagen_url.split('/')[-1] %}
-        {% set es_avatar_equipado = (item.objeto.tipo == 'avatar' and imagen_nombre == estudiante.avatar_personal) %}
-        {% set es_marco_equipado = (item.objeto.tipo == 'marco' and imagen_nombre == estudiante.marco_personal) %}
-        {% set es_fondo_equipado = (item.objeto.tipo == 'fondo' and imagen_nombre == estudiante.fondo_personal) %}
-
-        {% if es_avatar_equipado or es_marco_equipado or es_fondo_equipado %}
-          <div class="equipado">✓ Equipado</div>
+    
+    <div class="seccion-bloque">
+        <div class="titulo-seccion">🏅 Mis Insignias y Logros ({{ logros_desbloqueados|length }})</div>
+        {% if logros_desbloqueados %}
+            <div class="grid-items">
+                {% for logro in logros_desbloqueados %}
+                    <div class="card-inv logro-item">
+                        <img src="{{ url_for('static', filename='img/' + logro.imagen_url) }}" style="width: 75px; height: 75px; object-fit: contain; margin: 0 auto 10px auto;">
+                        <div style="font-weight: bold; font-size: 0.95em;">{{ logro.nombre }}</div>
+                        <div style="margin-top: 10px;">
+                            {% if estudiante.logro_equipado_id == logro.id %}
+                                <a href="{{ url_for('equipar_logro', logro_id=logro.id) }}" class="btn-comprar" style="background: #198754; font-size: 0.8em; padding: 6px; text-decoration: none; display: block;">
+                                    ⭐ Equipado
+                                </a>
+                            {% else %}
+                                <a href="{{ url_for('equipar_logro', logro_id=logro.id) }}" class="btn-comprar" style="background: #a10020; font-size: 0.8em; padding: 6px; text-decoration: none; display: block;">
+                                    Equipar Insignia
+                                </a>
+                            {% endif %}
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
         {% else %}
-          <a href="{{ url_for('equipar', tipo=item.objeto.tipo, obj_id=item.objeto.id) }}" class="btn-equipar">Equipar</a>
+            <p style="color: #6c757d; font-style: italic;">Aún no tienes logros reclamados en tu inventario. Visita la sección de Logros para desbloquearlos.</p>
         {% endif %}
+    </div>
 
-      </div>
-    {% else %}
-      <p class="mensaje-vacio">Tu inventario está vacío. ¡Visita la <a href="{{ url_for('tienda') }}">tienda</a> para adquirir nuevos objetos!</p>
-    {% endfor %}
-  </div>
+    <div class="seccion-bloque">
+        <div class="titulo-seccion">🛍️ Objetos Adquiridos en Tienda ({{ inventario|length }})</div>
+        {% if inventario %}
+            <div class="grid-items">
+                {% for item in inventario %}
+                    <div class="card-inv">
+                        <img src="{{ url_for('static', filename='img/' + item.objeto.imagen_url) }}" style="width: 75px; height: 75px; object-fit: contain; margin: 0 auto 10px auto;">
+                        <div style="font-weight: bold; font-size: 0.95em;">{{ item.objeto.nombre }}</div>
+                        
+                        {% set imagen_nombre = item.objeto.imagen_url.split('/')[-1] %}
+                        {% set es_avatar_equipado = (item.objeto.tipo == 'avatar' and imagen_nombre == estudiante.avatar_personal) %}
+                        {% set es_marco_equipado = (item.objeto.tipo == 'marco' and imagen_nombre == estudiante.marco_personal) %}
+                        {% set es_fondo_equipado = (item.objeto.tipo == 'fondo' and imagen_nombre == estudiante.fondo_personal) %}
+
+                        <div style="margin-top: 10px;">
+                            {% if es_avatar_equipado or es_marco_equipado or es_fondo_equipado %}
+                                <span style="color: #198754; font-weight: bold; font-size: 0.85em;">✓ Equipado</span>
+                            {% else %}
+                                <a href="{{ url_for('equipar', tipo=item.objeto.tipo, obj_id=item.objeto.id) }}" class="btn-comprar" style="font-size: 0.8em; padding: 6px; text-decoration: none; display: block;">
+                                    Equipar {{ item.objeto.tipo|capitalize }}
+                                </a>
+                            {% endif %}
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <p style="color: #6c757d; font-style: italic;">Tu inventario de compras está vacío. ¡Visita la <a href="{{ url_for('tienda') }}">tienda</a> para adquirir nuevos objetos!</p>
+        {% endif %}
+    </div>
+
 </div>
 {% endblock %}
