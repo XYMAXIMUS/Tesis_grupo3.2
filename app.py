@@ -65,7 +65,10 @@ class Estudiante(db.Model):
     password_hash = db.Column(db.String(255), nullable=False)
     puntos = db.Column(db.Integer, default=0, nullable=False)
     xp = db.Column(db.Integer, default=0, nullable=False)
-    nivel = db.Column(db.Integer, default=1, nullable=False)
+    
+    # Nivel base inicial ajustado estrictamente a 0
+    nivel = db.Column(db.Integer, default=0, nullable=False)
+    
     avatar_personal = db.Column(db.String(255), default='avatar-1.png')
     marco_personal = db.Column(db.String(255), default=None, nullable=True)
     fondo_personal = db.Column(db.String(255), default=None, nullable=True)
@@ -195,16 +198,13 @@ with app.app_context():
         db.session.add_all(actividades_iniciales)
         db.session.commit()
 
-    # POBLACIÓN/SINCRONIZACIÓN COMPLETA DE LOGROS
+    # POBLACIÓN Y SINCRONIZACIÓN COMPLETA DE LOGROS
     catalogo_logros = [
-        # Medallas de la plataforma
         Logro(nombre="Primer Paso", descripcion="Realiza tu primera compra en la tienda.", imagen_url="medallas/Medalla_Primer_Compra.png", tipo_requisito="compra", meta_requisito=1),
         Logro(nombre="Explorador", descripcion="Visita al menos 3 secciones distintas de la plataforma.", imagen_url="medallas/Medalla_Explorador_de_Juegos.png", tipo_requisito="visita", meta_requisito=3),
         Logro(nombre="Maestro de Memoria", descripcion="Demuestra tus habilidades completando el juego de memoria.", imagen_url="medallas/Medalla_Maestro_de_Memoria.png", tipo_requisito="nivel", meta_requisito=2),
         Logro(nombre="Constancia Semanal", descripcion="Inicia sesión durante 7 días.", imagen_url="medallas/Medalla_Constancia_Semanal.png", tipo_requisito="dias", meta_requisito=7),
-        
-        # Logros Especiales Animados (GIFs por Nivel)
-        Logro(nombre="Iniciante Gamer", descripcion="Comienza tu trayectoria en el Nivel 1.", imagen_url="logros_especiales/nivel_1.gif", tipo_requisito="nivel", meta_requisito=1),
+        Logro(nombre="Iniciante Gamer", descripcion="Comienza tu trayectoria alcanzando el Nivel 1.", imagen_url="logros_especiales/nivel_1.gif", tipo_requisito="nivel", meta_requisito=1),
         Logro(nombre="Aventurero Nivel 2", descripcion="Demuestra tu avance alcanzando el Nivel 2.", imagen_url="logros_especiales/nivel_2.gif", tipo_requisito="nivel", meta_requisito=2),
         Logro(nombre="Promesa Gamer", descripcion="Llega al Nivel 3 completando misiones.", imagen_url="logros_especiales/nivel_3.gif", tipo_requisito="nivel", meta_requisito=3),
         Logro(nombre="Experto Nivel 4", descripcion="Consigue llegar al Nivel 4.", imagen_url="logros_especiales/nivel_4.gif", tipo_requisito="nivel", meta_requisito=4),
@@ -234,7 +234,6 @@ def rastrear_secciones_visitadas():
         estudiante = db.session.get(Estudiante, session['estudiante_id'])
         if estudiante and estudiante.secciones_visitadas < 3:
             estudiante.secciones_visitadas += 1
-            verificar_y_asignar_logros(estudiante)
             db.session.commit()
 
 # FUNCIONES AUXILIARES DE GAMIFICACIÓN
@@ -243,7 +242,7 @@ def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 def calcular_xp_para_siguiente_nivel(nivel_actual):
-    return nivel_actual * 100
+    return (nivel_actual + 1) * 100
 
 def verificar_y_actualizar_nivel(estudiante):
     xp_necesaria = calcular_xp_para_siguiente_nivel(estudiante.nivel)
@@ -251,27 +250,6 @@ def verificar_y_actualizar_nivel(estudiante):
         estudiante.nivel += 1
         flash(f"🎉 ¡Felicidades! Has alcanzado el Nivel {estudiante.nivel} 🎉", "info")
         xp_necesaria = calcular_xp_para_siguiente_nivel(estudiante.nivel)
-        verificar_y_asignar_logros(estudiante)
-
-def verificar_y_asignar_logros(estudiante):
-    todos_logros = Logro.query.all()
-    compras_realizadas = len(estudiante.inventario)
-
-    for logro in todos_logros:
-        if logro not in estudiante.logros:
-            cumplido = False
-            if logro.tipo_requisito == 'nivel' and estudiante.nivel >= logro.meta_requisito:
-                cumplido = True
-            elif logro.tipo_requisito == 'compra' and compras_realizadas >= logro.meta_requisito:
-                cumplido = True
-            elif logro.tipo_requisito == 'visita' and estudiante.secciones_visitadas >= logro.meta_requisito:
-                cumplido = True
-            elif logro.tipo_requisito == 'dias' and estudiante.dias_sesion >= logro.meta_requisito:
-                cumplido = True
-
-            if cumplido:
-                estudiante.logros.append(logro)
-                flash(f"🏆 ¡Has desbloqueado un nuevo logro: '{logro.nombre}'! 🏆", "success")
 
 def procesar_accion_gamificada(estudiante_id, action_trigger, cantidad=1):
     estudiante = db.session.get(Estudiante, estudiante_id) 
@@ -293,7 +271,6 @@ def procesar_accion_gamificada(estudiante_id, action_trigger, cantidad=1):
                 estudiante.xp += mision.recompensa_xp
                 flash(f"✨ ¡Misión completada: '{mision.nombre}'! ✨", "success")
                 verificar_y_actualizar_nivel(estudiante)
-                verificar_y_asignar_logros(estudiante)
 
 # --- RUTAS DE LA APLICACIÓN ---
 
@@ -301,13 +278,8 @@ def procesar_accion_gamificada(estudiante_id, action_trigger, cantidad=1):
 @login_required 
 def index():
     estudiante = db.session.get(Estudiante, session['estudiante_id'])
-    xp_necesaria_total_para_siguiente_nivel = calcular_xp_para_siguiente_nivel(estudiante.nivel)
-    xp_actual_en_nivel = estudiante.xp - calcular_xp_para_siguiente_nivel(estudiante.nivel - 1) if estudiante.nivel > 1 else estudiante.xp
-    xp_restante_para_siguiente_nivel = xp_necesaria_total_para_siguiente_nivel - estudiante.xp
-    
-    xp_actual_en_nivel = max(0, xp_actual_en_nivel)
-    progreso_xp = (xp_actual_en_nivel / 100) * 100 if xp_necesaria_total_para_siguiente_nivel > 0 else 0
-
+    xp_necesaria_total = calcular_xp_para_siguiente_nivel(estudiante.nivel)
+    progreso_xp = min(100, int((estudiante.xp / xp_necesaria_total) * 100)) if xp_necesaria_total > 0 else 0
     logros_destacados = estudiante.logros.limit(3).all()
 
     return render_template('index.html',
@@ -315,8 +287,7 @@ def index():
         nivel=estudiante.nivel,
         progreso_xp=progreso_xp,
         xp_actual=estudiante.xp,
-        xp_siguiente_nivel_total=xp_necesaria_total_para_siguiente_nivel,
-        xp_restante_para_siguiente_nivel=max(0, xp_restante_para_siguiente_nivel),
+        xp_siguiente_nivel_total=xp_necesaria_total,
         activo='panel',
         logros_destacados=logros_destacados
     )
@@ -331,12 +302,14 @@ def mostrar_logros():
     logros_procesados = []
     for logro in todos_los_logros:
         es_desbloqueado = logro.id in logros_obtenidos_ids
-        porcentaje_progreso = 100
+        porcentaje_progreso = 0
         texto_objetivo = ""
 
-        if not es_desbloqueado:
+        if es_desbloqueado:
+            porcentaje_progreso = 100
+        else:
             if logro.tipo_requisito == 'nivel':
-                porcentaje_progreso = min(100, int((estudiante.nivel / logro.meta_requisito) * 100))
+                porcentaje_progreso = min(100, int((estudiante.nivel / logro.meta_requisito) * 100)) if logro.meta_requisito > 0 else 0
                 texto_objetivo = f"Alcanzar el Nivel {logro.meta_requisito} (Tu nivel actual: {estudiante.nivel})"
             elif logro.tipo_requisito == 'compra':
                 compras = len(estudiante.inventario)
@@ -357,10 +330,34 @@ def mostrar_logros():
             'equipado': estudiante.logro_equipado_id == logro.id
         })
 
-    return render_template('logros.html', 
-                           estudiante=estudiante, 
-                           logros=logros_procesados, 
-                           activo='logros')
+    return render_template('logros.html', estudiante=estudiante, logros=logros_procesados, activo='logros')
+
+@app.route('/reclamar_logro/<int:logro_id>')
+@login_required
+def reclamar_logro(logro_id):
+    estudiante = db.session.get(Estudiante, session['estudiante_id'])
+    logro = db.session.get(Logro, logro_id)
+
+    if logro and logro not in estudiante.logros:
+        estudiante.logros.append(logro)
+        db.session.commit()
+        flash(f"🎉 ¡Has reclamado '{logro.nombre}'! Ahora está disponible en tu Inventario.", "success")
+    
+    return redirect(url_for('mostrar_logros'))
+
+@app.route("/inventario")
+@login_required
+def inventario():
+    estudiante = db.session.get(Estudiante, session['estudiante_id'])
+    return render_template("inventario.html", 
+        inventario=estudiante.inventario, 
+        logros_desbloqueados=estudiante.logros.all(),
+        activo='inventario',
+        estudiante=estudiante,
+        avatar=estudiante.avatar_personal, 
+        marco=estudiante.marco_personal, 
+        name=estudiante.nombre
+    )
 
 @app.route('/equipar_logro/<int:logro_id>')
 @login_required
@@ -371,22 +368,19 @@ def equipar_logro(logro_id):
     if logro in estudiante.logros:
         if estudiante.logro_equipado_id == logro.id:
             estudiante.logro_equipado_id = None
-            flash(f"Has desequipado el logro '{logro.nombre}'.", "info")
+            flash(f"Has desequipado la insignia '{logro.nombre}'.", "info")
         else:
             estudiante.logro_equipado_id = logro.id
-            flash(f"¡Has equipado el logro '{logro.nombre}'!", "success")
+            flash(f"¡Has equipado la insignia '{logro.nombre}'!", "success")
         db.session.commit()
-    else:
-        flash("No puedes equipar un logro que aún no has desbloqueado.", "danger")
 
-    return redirect(url_for('mostrar_logros'))
+    return redirect(url_for('inventario'))
 
 @app.route("/ranking")
 @login_required
 def ranking():
     estudiante_actual = db.session.get(Estudiante, session['estudiante_id'])
     ranking_estudiantes = Estudiante.query.order_by(Estudiante.puntos.desc(), Estudiante.xp.desc()).all()
-
     return render_template("ranking.html", ranking=ranking_estudiantes, activo='ranking', estudiante=estudiante_actual)
 
 @app.route("/perfil/<int:estudiante_id>")
@@ -396,7 +390,6 @@ def ver_perfil(estudiante_id):
     if not estudiante_visitado:
         flash("Estudiante no encontrado.", "danger")
         return redirect(url_for('ranking'))
-
     estudiante_actual = db.session.get(Estudiante, session['estudiante_id'])
     return render_template("perfil_publico.html", estudiante_visitado=estudiante_visitado, estudiante=estudiante_actual)
 
@@ -443,24 +436,9 @@ def comprar(obj_id):
         procesar_accion_gamificada(estudiante.id, 'comprar_marco')
     procesar_accion_gamificada(estudiante.id, 'gastar_puntos', objeto.precio)
 
-    verificar_y_asignar_logros(estudiante)
-
     db.session.commit()
     flash("¡Compra realizada con éxito!", "success")
     return redirect(url_for('tienda'))
-
-@app.route("/inventario")
-@login_required
-def inventario():
-    estudiante = db.session.get(Estudiante, session['estudiante_id'])
-    return render_template("inventario.html", 
-        inventario=estudiante.inventario, 
-        activo='inventario',
-        estudiante=estudiante,
-        avatar=estudiante.avatar_personal, 
-        marco=estudiante.marco_personal, 
-        name=estudiante.nombre
-    )
 
 @app.route("/equipar/<string:tipo>/<int:obj_id>")
 @login_required
@@ -541,7 +519,6 @@ def completar_actividad(actividad_id):
     estudiante.puntos += actividad.puntos_recompensa
 
     verificar_y_actualizar_nivel(estudiante)
-    verificar_y_asignar_logros(estudiante)
 
     try:
         db.session.commit()
@@ -557,18 +534,14 @@ def completar_actividad(actividad_id):
 def mostrar_historial_actividades():
     estudiante = db.session.get(Estudiante, session['estudiante_id'])
     historial = estudiante.actividades_completadas.order_by(EstudianteActividadCompletada.fecha_completado.desc()).all()
-
-    return render_template('historial_actividades.html', 
-                           estudiante=estudiante, 
-                           historial=historial,
-                           activo='historial_actividades')
+    return render_template('historial_actividades.html', estudiante=estudiante, historial=historial, activo='historial_actividades')
 
 @app.route("/ajustes", methods=["GET", "POST"])
 @login_required
 def ajustes():
     estudiante = db.session.get(Estudiante, session['estudiante_id'])
     if not estudiante:
-        flash("Sesión no válida. Por favor, inicia sesión.", "danger")
+        flash("Sesión no válida.", "danger")
         return redirect(url_for('login'))
 
     if request.method == "POST":
@@ -598,8 +571,6 @@ def ajustes():
                 except Exception as e:
                     db.session.rollback()
                     flash(f"Error al subir avatar: {e}", "danger")
-            else:
-                flash("Formato de archivo de avatar no permitido o archivo no seleccionado.", "warning")
 
         return redirect(url_for("ajustes"))
 
@@ -615,7 +586,7 @@ def resetear_progreso():
 
     estudiante.puntos = 0
     estudiante.xp = 0
-    estudiante.nivel = 1
+    estudiante.nivel = 0
     estudiante.avatar_personal = 'avatar-1.png'
     estudiante.marco_personal = None
     estudiante.fondo_personal = None
@@ -644,7 +615,6 @@ def memoria():
     dificultad = request.args.get('dificultad', 'normal')
     config = DIFICULTAD_MEMORIA.get(dificultad, DIFICULTAD_MEMORIA['normal'])
     estudiante = db.session.get(Estudiante, session['estudiante_id'])
-
     return render_template("memoria.html", activo='juegos', dificultad=dificultad, puntos_ganar=config['puntos_ganar'], xp_ganar=config['xp_ganar'], penalizacion=config['penalizacion'], estudiante=estudiante, avatar=estudiante.avatar_personal, marco=estudiante.marco_personal, name=estudiante.nombre)
 
 @app.route("/juego/tictactoe/menu")
@@ -653,16 +623,6 @@ def tictactoe_volver_menu():
     estudiante = db.session.get(Estudiante, session['estudiante_id'])
     return render_template("tictactoe_menu.html", activo='juegos', avatar=estudiante.avatar_personal, marco=estudiante.marco_personal, name=estudiante.nombre)
 
-@app.route("/juego/tictactoe/ganar", methods=["POST"])
-@login_required
-def tictactoe_ganar():
-    return jsonify({"status": "deprecated", "message": "Por favor, usa /juego/resultado"}), 400
-
-@app.route("/juego/tictactoe/perder", methods=["POST"])
-@login_required
-def tictactoe_perder():
-    return jsonify({"status": "deprecated", "message": "Por favor, usa /juego/resultado"}), 400
-
 @app.route("/juego/tictactoe")
 @login_required
 def tictactoe():
@@ -670,7 +630,6 @@ def tictactoe():
     dificultad = request.args.get('dificultad', 'normal')
     config = DIFICULTAD_TICTACTOE.get(dificultad, DIFICULTAD_TICTACTOE['normal'])
     estudiante = db.session.get(Estudiante, session['estudiante_id'])
-    
     return render_template("tictactoe.html", activo='juegos', modo=modo, dificultad=dificultad, puntos_ganar=config['puntos_ganar'], xp_ganar=config['xp_ganar'], penalizacion=config['penalizacion'], estudiante=estudiante, avatar=estudiante.avatar_personal, marco=estudiante.marco_personal, name=estudiante.nombre)
 
 @app.route("/juego/resultado", methods=["POST"])
@@ -700,7 +659,6 @@ def juego_resultado():
             estudiante.puntos = max(0, estudiante.puntos - config['penalizacion']) 
     
     verificar_y_actualizar_nivel(estudiante)
-    verificar_y_asignar_logros(estudiante)
 
     try:
         db.session.commit()
@@ -742,33 +700,22 @@ def registro():
         if not nombre or not email or not password:
             flash('Por favor, completa todos los campos.', 'danger')
             return redirect(url_for('registro'))
-        if len(nombre) < 3 or len(nombre) > 30:
-            flash('El nombre de usuario debe tener entre 3 y 30 caracteres.', 'danger')
-            return redirect(url_for('registro'))
-        if len(password) < 6:
-            flash('La contraseña debe tener al menos 6 caracteres.', 'danger')
-            return redirect(url_for('registro'))
 
         if Estudiante.query.filter_by(email=email).first():
             flash('El email ya está registrado.', 'danger')
             return redirect(url_for('registro'))
         if Estudiante.query.filter_by(nombre=nombre).first():
-            flash('El nombre de usuario ya existe. Por favor, elige otro.', 'danger')
+            flash('El nombre de usuario ya existe.', 'danger')
             return redirect(url_for('registro'))
 
         password_hash = generate_password_hash(password)
-        nuevo_estudiante = Estudiante(nombre=nombre, email=email, password_hash=password_hash)
+        nuevo_estudiante = Estudiante(nombre=nombre, email=email, password_hash=password_hash, nivel=0)
         
         try:
             db.session.add(nuevo_estudiante)
             db.session.commit()
-            
             flash('¡Cuenta creada con éxito! Ahora puedes iniciar sesión.', 'success')
             return redirect(url_for('login'))
-        except IntegrityError:
-            db.session.rollback()
-            flash('Hubo un error al registrar. El nombre de usuario o email podrían estar ya en uso.', 'danger')
-            return redirect(url_for('registro'))
         except Exception as e:
             db.session.rollback()
             flash(f'Ocurrió un error inesperado al registrar: {e}', "danger")
@@ -786,7 +733,6 @@ def login():
         if estudiante and check_password_hash(estudiante.password_hash, password):
             session['estudiante_id'] = estudiante.id
             estudiante.dias_sesion += 1
-            verificar_y_asignar_logros(estudiante)
             db.session.commit()
             flash(f'¡Bienvenido de nuevo, {estudiante.nombre}!', 'success')
             return redirect(url_for('index'))
